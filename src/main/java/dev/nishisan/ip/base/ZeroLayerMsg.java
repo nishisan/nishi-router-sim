@@ -15,37 +15,41 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.nswitch.ne;
+package dev.nishisan.ip.base;
 
-import dev.nishisan.ip.base.BaseInterface;
+import java.io.Serializable;
+import java.util.UUID;
+import java.util.function.Consumer;
 
 /**
  *
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
- * created 01.10.2024
+ * created 02.10.2024
  */
-public class NSwitchInterface extends BaseInterface {
+public class ZeroLayerMsg implements Serializable {
 
-    private NSwitch nSwitch;
+    private String uid = UUID.randomUUID().toString();
 
-    public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
-        this.nSwitch = nSwitch;
+    private Consumer<String> replyCallback;
+
+    public String getUid() {
+        return uid;
     }
 
-    public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
-        this.setDescription(description);
-        this.nSwitch = nSwitch;
 
+    public void onReply(Consumer<String> callback) {
+        this.replyCallback = callback;
     }
 
-    public NSwitch getnSwitch() {
-        return nSwitch;
+    public void reply(String response) {
+        if (this.replyCallback != null) {
+            this.replyCallback.accept(response);
+        }
     }
 
-    public void setnSwitch(NSwitch nSwitch) {
-        this.nSwitch = nSwitch;
+    @Override
+    public String toString() {
+        return "ZeroLayerMsg{" + "uid=" + uid + '}';
     }
 
 }

@@ -19,6 +19,10 @@ package dev.nishisan.ip.nswitch.ne;
 
 import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
+import dev.nishisan.ip.base.NLink;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
  *
@@ -26,6 +30,8 @@ import dev.nishisan.ip.base.BaseNe;
  * created 01.10.2024
  */
 public class NSwitch extends BaseNe<NSwitchInterface> {
+
+    private Map<String, NLink> links = Collections.synchronizedMap(new LinkedHashMap());
 
     public NSwitch(String name) {
         super(name);
@@ -43,9 +49,12 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         return iFace;
     }
 
-    public void connect(BaseInterface src, BaseInterface dst) {
+    public NLink connect(BaseInterface src, BaseInterface dst) {
+        NLink link = new NLink(src, dst);
+        this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
+        return link;
     }
 
-    
    
+
 }

@@ -15,37 +15,44 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.nswitch.ne;
 
-import dev.nishisan.ip.base.BaseInterface;
+package dev.nishisan.ip.base;
 
 /**
  *
- * @author Lucas Nishimura <lucas.nishimura at gmail.com>
- * created 01.10.2024
+ * @author  Lucas Nishimura <lucas.nishimura at gmail.com> 
+ * created 02.10.2024
  */
-public class NSwitchInterface extends BaseInterface {
+public class NLink {
 
-    private NSwitch nSwitch;
+    private BaseInterface src;
+    private BaseInterface dst;
 
-    public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
-        this.nSwitch = nSwitch;
+    public NLink(BaseInterface src, BaseInterface dst) {
+        this.src = src;
+        this.dst = dst;
+        
+        this.src.setLink(this);
+        this.dst.setLink(this);
     }
 
-    public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
-        this.setDescription(description);
-        this.nSwitch = nSwitch;
-
+    public BaseInterface getSrc() {
+        return src;
     }
 
-    public NSwitch getnSwitch() {
-        return nSwitch;
+    public void setSrc(BaseInterface src) {
+        this.src = src;
     }
 
-    public void setnSwitch(NSwitch nSwitch) {
-        this.nSwitch = nSwitch;
+    public BaseInterface getDst() {
+        return dst;
     }
 
+    public void setDst(BaseInterface dst) {
+        this.dst = dst;
+    }
+
+    
+    
+     
 }

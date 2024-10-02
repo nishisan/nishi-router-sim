@@ -17,8 +17,10 @@
  */
 package dev.nishisan.ip.base;
 
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -28,7 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class BaseNe<T extends BaseInterface> {
 
     private final String name;
-    private Map<String, T> interfaces = new ConcurrentHashMap<>();
+    private final PublishSubject<ZeroLayerMsg> eventBus = PublishSubject.create();
+    private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
 
     public BaseNe(String name) {
         this.name = name;
@@ -51,6 +54,20 @@ public class BaseNe<T extends BaseInterface> {
 
     public String getName() {
         return name;
+    }
+
+    public PublishSubject<ZeroLayerMsg> getEventBus() {
+        return eventBus;
+    }
+
+    public void sendMsg() {
+        ZeroLayerMsg m = new ZeroLayerMsg();
+        // Definir o que fazer quando uma resposta for recebida
+        m.onReply(response -> {
+            System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
+        });
+
+        this.eventBus.onNext(m);
     }
 
     public void printInterfaces() {

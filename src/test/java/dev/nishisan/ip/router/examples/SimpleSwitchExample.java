@@ -65,6 +65,9 @@ public class SimpleSwitchExample {
          */
         vSwitch.addInterface("eth-1", "LT:router-1");
         vSwitch.addInterface("eth-2", "LT:router-2");
+        vSwitch.addInterface("eth-3", "");
+        
+        vSwitch.sendMsg();
         
         /**
          * Creates a connection from router-1.ge0/0/0/1 to switch-1.eth-1

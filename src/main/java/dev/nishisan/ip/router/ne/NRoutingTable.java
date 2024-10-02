@@ -18,18 +18,19 @@
 package dev.nishisan.ip.router.ne;
 
 import inet.ipaddr.IPAddress;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class NRoutingTable {
 
     private String name;
     private NRouter router;
-    private Map<String, NRoutingEntry> entries = new ConcurrentHashMap<>();
+    private Map<String, NRoutingEntry> entries = Collections.synchronizedMap(new LinkedHashMap());
 
     public NRoutingTable(String name, NRouter router) {
         this.name = name;
@@ -118,7 +119,7 @@ public class NRoutingTable {
      * @return
      */
     public Optional<NRoutingEntry> getNextHop(String destinationIp) {
-        IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);        
+        IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);
         return Optional.of(this.getNextHop(destinationAddress));
     }
 

@@ -18,6 +18,7 @@
 package dev.nishisan.ip.base;
 
 import inet.ipaddr.IPAddress;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Random;
 
 /**
@@ -33,6 +34,8 @@ public class BaseInterface {
     private IPAddress address;
     private NIfaceOperStatus operStatus = NIfaceOperStatus.OPER_UP;
     private NIfaceAdminStatus adminStatus = NIfaceAdminStatus.ADMIN_UP;
+    private NLink link;
+    private final PublishSubject<ZeroLayerMsg> eventBus;
 
     public enum NIfaceOperStatus {
         OPER_UP,
@@ -44,9 +47,16 @@ public class BaseInterface {
         ADMIN_DOWN
     }
 
-    public BaseInterface(String name) {
+    public BaseInterface(String name, PublishSubject<ZeroLayerMsg> eventBus) {
         this.name = name;
+        this.eventBus = eventBus;
         this.macAddress = BaseInterface.generateMacAddress();
+
+        this.eventBus.subscribe(m -> {
+            System.out.println("Msg Received:[" + m.getUid() + "]");
+
+            m.reply(this.name + " respondeu à mensagem com UID: " + m.getUid());
+        });
     }
 
     public static String generateMacAddress() {
@@ -112,6 +122,11 @@ public class BaseInterface {
         this.description = description;
     }
 
-    
-    
+    public void setLink(NLink link) {
+        this.link = link;
+    }
+
+    public NLink getLink() {
+        return this.link;
+    }
 }
