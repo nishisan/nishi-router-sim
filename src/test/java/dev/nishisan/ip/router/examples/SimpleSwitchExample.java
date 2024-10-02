@@ -29,6 +29,7 @@ import java.util.Optional;
 public class SimpleSwitchExample {
 
     public static void main(String[] args) {
+
         /**
          * Cria um router e adiciona algumas interfaces..
          */
@@ -45,7 +46,7 @@ public class SimpleSwitchExample {
         router1.addRouteEntry("0.0.0.0", "10.0.0.254");
 
         NRouter router2 = new NRouter("router-2");
-        router2.addInterface("ge0/0/0/1", "10.0.0.254/24","LT:switch-1 eth-1");
+        router2.addInterface("ge0/0/0/1", "10.0.0.254/24", "LT:switch-1 eth-1");
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
         router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
@@ -57,29 +58,33 @@ public class SimpleSwitchExample {
         router2.printRoutingTable();
 
         /**
-         * Creates a VSwitch with 2 Interfaces
+         * Cria 2 switches, e conecta um router em cada switch, e uma interface
+         * eth3 entre os switches.
          */
-        NSwitch vSwitch = new NSwitch("switch-1");
-        /**
-         * Adiciona 2 interfaces
-         */
-        vSwitch.addInterface("eth-1", "LT:router-1");
-        vSwitch.addInterface("eth-2", "LT:router-2");
-        vSwitch.addInterface("eth-3", "");
-        
-        vSwitch.sendMsg();
-        
-        /**
-         * Creates a connection from router-1.ge0/0/0/1 to switch-1.eth-1
-         */
-        vSwitch.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch.getInterfaceByName("eth-1"));
-        /**
-         * Creates a connection from router-2.ge0/0/0/1 to switch-1.eth-2
-         */
-        vSwitch.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch.getInterfaceByName("eth-2"));
+        NSwitch vSwitch1 = new NSwitch("switch-1");
+        vSwitch1.addInterface("eth-1", "LT:router-1");
+        vSwitch1.addInterface("eth-2", "");
+        vSwitch1.addInterface("eth-3", "LT:switch-2");
 
-        
-        vSwitch.printInterfaces();
+        NSwitch vSwitch2 = new NSwitch("switch-2");
+        vSwitch2.addInterface("eth-1", "LT:router-2");
+        vSwitch2.addInterface("eth-2", "");
+        vSwitch2.addInterface("eth-3", "LT:switch-1");
+
+        vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));
+
+        vSwitch2.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch2.getInterfaceByName("eth-1"));
+
+        vSwitch1.connect(vSwitch1.getInterfaceByName("eth-3"), vSwitch2.getInterfaceByName("eth-3"));
+
+        /**
+         * Avalia se o dominio de broadcast se propaga pela interface do
+         * router1->switch-1->switch-2-> router-2
+         */
+        router1.pingBroadcast();
+
+        vSwitch1.printInterfaces();
+        vSwitch2.printInterfaces();
         Optional<NRoutingEntry> route = router1.getNextHop("10.0.2.1");
 
         if (route.isPresent()) {
@@ -90,4 +95,5 @@ public class SimpleSwitchExample {
             route.get().print();
         }
     }
+
 }

@@ -40,6 +40,9 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
     public NSwitchInterface addInterface(String name, String description) {
         NSwitchInterface iFace = new NSwitchInterface(name, description, this);
         this.getInterfaces().put(name, iFace);
+        if (iFace.getLink()==null){
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+        }
         return iFace;
     }
 
@@ -51,10 +54,14 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
 
     public NLink connect(BaseInterface src, BaseInterface dst) {
         NLink link = new NLink(src, dst);
+        System.out.println("Connection from:[" + src.getNe().getType() + "] to: [" + dst.getNe().getType() + "] Created!");
         this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
         return link;
     }
 
-   
+    @Override
+    public String getType() {
+        return "SWITCH";
+    }
 
 }

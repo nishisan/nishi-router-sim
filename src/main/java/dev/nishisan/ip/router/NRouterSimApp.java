@@ -90,7 +90,5 @@ public class NRouterSimApp {
          */
         router1.ping("8.8.8.8");
         router1.ping("1.1.1.1");
-//        router1.ping("192.168.3.2");
-//        router1.ping("10.10.10.10");
     }
 }

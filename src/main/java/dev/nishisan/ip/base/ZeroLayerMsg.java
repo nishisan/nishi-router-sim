@@ -18,7 +18,9 @@
 package dev.nishisan.ip.base;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
@@ -30,12 +32,13 @@ public class ZeroLayerMsg implements Serializable {
 
     private String uid = UUID.randomUUID().toString();
 
+    private Integer vlanId = 0;
     private Consumer<String> replyCallback;
+    private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
 
     public String getUid() {
         return uid;
     }
-
 
     public void onReply(Consumer<String> callback) {
         this.replyCallback = callback;
@@ -50,6 +53,30 @@ public class ZeroLayerMsg implements Serializable {
     @Override
     public String toString() {
         return "ZeroLayerMsg{" + "uid=" + uid + '}';
+    }
+
+    public Integer getVlanId() {
+        return vlanId;
+    }
+
+    public void setVlanId(Integer vlanId) {
+        this.vlanId = vlanId;
+    }
+
+    public Consumer<String> getReplyCallback() {
+        return replyCallback;
+    }
+
+    public void setReplyCallback(Consumer<String> replyCallback) {
+        this.replyCallback = replyCallback;
+    }
+
+    public Boolean walked(BaseInterface i) {
+        return this.walked.containsKey(i.getUid());
+    }
+
+    public void notifyWalk(BaseInterface i) {
+        this.walked.put(i.getUid(), i);
     }
 
 }

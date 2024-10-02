@@ -27,10 +27,14 @@ import java.util.Map;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 01.10.2024
  */
-public class BaseNe<T extends BaseInterface> {
+public abstract class BaseNe<T extends BaseInterface> {
 
     private final String name;
+    /**
+     * Mimics the Broadcast
+     */
     private final PublishSubject<ZeroLayerMsg> eventBus = PublishSubject.create();
+
     private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
 
     public BaseNe(String name) {
@@ -60,15 +64,27 @@ public class BaseNe<T extends BaseInterface> {
         return eventBus;
     }
 
-    public void sendMsg() {
+    public void pingBroadcast() {
         ZeroLayerMsg m = new ZeroLayerMsg();
-        // Definir o que fazer quando uma resposta for recebida
         m.onReply(response -> {
             System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
         });
-
         this.eventBus.onNext(m);
     }
+
+    public void pingBroadcast(ZeroLayerMsg m) {
+        m.onReply(response -> {
+            System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
+        });
+        this.eventBus.onNext(m);
+    }
+
+    /**
+     * Gets the NE Type
+     *
+     * @return
+     */
+    public abstract String getType();
 
     public void printInterfaces() {
         System.out.println("------------------------------------------------------------------------------------");
@@ -77,6 +93,7 @@ public class BaseNe<T extends BaseInterface> {
         System.out.println("------------------------------------------------------------------------------------");
         String header = String.format("%-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "MAC Address", "Description");
         System.out.println(header);
+        System.out.println("------------------------------------------------------------------------------------");
         this.interfaces.forEach((k, v) -> {
             String row = String.format("%-15s %-15s %-15s %-18s %-30s", v.getName(), v.getAdminStatus(), v.getOperStatus(), v.getMacAddress(), v.getDescription());
             System.out.println(row);

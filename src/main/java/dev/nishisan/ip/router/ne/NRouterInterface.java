@@ -25,12 +25,12 @@ public class NRouterInterface extends BaseInterface {
     private NRouter router;
 
     public NRouterInterface(String name, NRouter router) {
-        super(name,router.getEventBus());
+        super(name,router);
         this.router = router;
     }
 
     public NRouterInterface(String name, String address, NRouter router) {
-        super(name,router.getEventBus());
+        super(name,router);
         this.setAddress(new IPAddressString(address).getAddress());
         this.router = router;
     }

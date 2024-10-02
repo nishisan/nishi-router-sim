@@ -15,25 +15,32 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-
 package dev.nishisan.ip.base;
 
 /**
  *
- * @author  Lucas Nishimura <lucas.nishimura at gmail.com> 
+ * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 02.10.2024
  */
 public class NLink {
 
     private BaseInterface src;
     private BaseInterface dst;
+    private Integer vlanId = 0;
 
     public NLink(BaseInterface src, BaseInterface dst) {
         this.src = src;
         this.dst = dst;
-        
         this.src.setLink(this);
         this.dst.setLink(this);
+        
+        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)){
+            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)){
+                this.src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                this.dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+            }
+        }
+        
     }
 
     public BaseInterface getSrc() {
@@ -52,7 +59,20 @@ public class NLink {
         this.dst = dst;
     }
 
-    
-    
-     
+    public BaseInterface getOtherIface(BaseInterface i) {
+        if (this.src.equals(i)) {
+            return this.dst;
+        } else {
+            return this.src;
+        }
+    }
+
+    public Integer getVlanId() {
+        return vlanId;
+    }
+
+    public void setVlanId(Integer vlanId) {
+        this.vlanId = vlanId;
+    }
+
 }

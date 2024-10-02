@@ -19,7 +19,9 @@ package dev.nishisan.ip.base;
 
 import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import java.util.Objects;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  *
@@ -29,13 +31,15 @@ import java.util.Random;
 public class BaseInterface {
 
     private String name;
-    private String description;
+    private String description = "";
     private String macAddress;
     private IPAddress address;
     private NIfaceOperStatus operStatus = NIfaceOperStatus.OPER_UP;
     private NIfaceAdminStatus adminStatus = NIfaceAdminStatus.ADMIN_UP;
+    private final BaseNe ne;
     private NLink link;
     private final PublishSubject<ZeroLayerMsg> eventBus;
+    private String uid = UUID.randomUUID().toString();
 
     public enum NIfaceOperStatus {
         OPER_UP,
@@ -47,15 +51,40 @@ public class BaseInterface {
         ADMIN_DOWN
     }
 
-    public BaseInterface(String name, PublishSubject<ZeroLayerMsg> eventBus) {
+    public BaseInterface(String name, BaseNe ne) {
         this.name = name;
-        this.eventBus = eventBus;
+        this.eventBus = ne.getEventBus();
         this.macAddress = BaseInterface.generateMacAddress();
-
+        this.ne = ne;
+        /**
+         *
+         */
         this.eventBus.subscribe(m -> {
-            System.out.println("Msg Received:[" + m.getUid() + "]");
 
-            m.reply(this.name + " respondeu à mensagem com UID: " + m.getUid());
+            if (this.operStatus.equals(NIfaceOperStatus.OPER_UP)) {
+                if (this.link != null) {
+                    if (!m.walked(this)) {
+
+                        m.notifyWalk(this);
+                        //
+                        // Verifica se temos link na interface
+                        //
+
+                        StringBuilder msg = new StringBuilder("Zero Layer Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
+
+                        msg.append(" Conected:[True]");
+                        //
+                        // Obtem a ponta remota
+                        //
+                        BaseInterface o = this.link.getOtherIface(this);
+                        o.getNe().pingBroadcast(m);
+
+                        System.out.println(msg.toString());
+
+                    }
+                }
+            }
+
         });
     }
 
@@ -129,4 +158,39 @@ public class BaseInterface {
     public NLink getLink() {
         return this.link;
     }
+
+    public String getUid() {
+        return uid;
+    }
+
+    public void setUid(String uid) {
+        this.uid = uid;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 23 * hash + Objects.hashCode(this.uid);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final BaseInterface other = (BaseInterface) obj;
+        return Objects.equals(this.uid, other.uid);
+    }
+
+    public BaseNe getNe() {
+        return ne;
+    }
+
 }

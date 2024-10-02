@@ -29,12 +29,12 @@ public class NSwitchInterface extends BaseInterface {
     private NSwitch nSwitch;
 
     public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
+        super(name,nSwitch);
         this.nSwitch = nSwitch;
     }
 
     public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch.getEventBus());
+        super(name,nSwitch);
         this.setDescription(description);
         this.nSwitch = nSwitch;
 

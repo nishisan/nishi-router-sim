@@ -119,4 +119,9 @@ public class NRouter extends BaseNe<NRouterInterface> {
         return r;
     }
 
+    @Override
+    public String getType() {
+        return "ROUTER";
+    }
+
 }

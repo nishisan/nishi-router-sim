@@ -129,7 +129,6 @@ public class NRoutingTable {
             return entries.entrySet().parallelStream()
                     .filter(entry -> entry.getValue().getDst().contains(destinationAddress))
                     .max(Comparator.comparingInt(entry -> {
-                        // Priorizar rotas mais específicas, exceto a rota padrão
                         int prefixLength = entry.getValue().getDst().getPrefixLength();
                         return entry.getKey().equals("0.0.0.0/0") ? prefixLength - 1 : prefixLength;
                     }))
