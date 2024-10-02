@@ -1,17 +1,31 @@
+/*
+ * Copyright (C) 2024 Lucas Nishimura <lucas.nishimura at gmail.com>
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ */
 package dev.nishisan.ip.router.ne;
 
+import dev.nishisan.ip.base.BaseNe;
 import dev.nishisan.ip.router.ne.NRoutingEntry.NRouteEntryScope;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class NRouter {
+public class NRouter extends BaseNe<NRouterInterface> {
 
-    private final String name;
-    private Map<String, NInterface> interfaces = new ConcurrentHashMap<>();
     private final NRoutingTable mainRouteTable = new NRoutingTable("main", this);
 
     public NRouter(String name) {
-        this.name = name;
+        super(name);
     }
 
     /**
@@ -20,9 +34,9 @@ public class NRouter {
      * @param name
      * @return
      */
-    public NInterface addInterface(String name) {
-        NInterface iFace = new NInterface(name, this);
-        this.interfaces.put(name, iFace);
+    public NRouterInterface addInterface(String name) {
+        NRouterInterface iFace = new NRouterInterface(name, this);
+        this.getInterfaces().put(name, iFace);
         return iFace;
     }
 
@@ -33,25 +47,31 @@ public class NRouter {
      * @param address
      * @return
      */
-    public NInterface addInterface(String name, String address) {
-        NInterface iFace = new NInterface(name, address, this);
-        this.interfaces.put(name, iFace);
-        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace,NRouteEntryScope.link);
+    public NRouterInterface addInterface(String name, String address) {
+        NRouterInterface iFace = new NRouterInterface(name, address, this);
+        this.getInterfaces().put(name, iFace);
+        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
         return iFace;
     }
-    
-    
-    public void printRoutingTable(){
+
+    public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, String dev) {
+        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, this.getInterfaceByName(dev));
+        return this.mainRouteTable.addRouteEntry(entry);
+    }
+
+    public void printRoutingTable() {
         this.mainRouteTable.printRoutingTable();
     }
 
-    public Map<String, NInterface> getInterfaces() {
-        return interfaces;
+    public void ping(String target) {
+        System.out.println("Searching Routing Table for Target:[" + target + "] ");
+        NRoutingEntry r = this.mainRouteTable.getNextHop(target);
+        if (r != null) {
+            System.out.println("Next Hop Found:");
+            r.print();
+        } else {
+            System.out.println("Next Hop Not Found...");
+        }
     }
 
-    public void setInterfaces(Map<String, NInterface> interfaces) {
-        this.interfaces = interfaces;
-    }
-
-    
 }
