@@ -17,41 +17,67 @@
  */
 package dev.nishisan.ip.router.examples;
 
+import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import java.util.Optional;
 
 /**
- * Creates a Router with 8 Interfaces
  *
  * @author lucas
  */
-public class SimpleRouterExample {
+public class SimpleSwitchExample {
 
     public static void main(String[] args) {
         /**
-         * Create a Router with 8 Interfaces
+         * Cria um router e adiciona algumas interfaces..
          */
         NRouter router1 = new NRouter("router-1");
-        router1.addInterface("ge0/0/0/1", "192.168.0.1/24", "UPLINK");
+        router1.addInterface("ge0/0/0/1", "10.0.0.1/24", "LT:switch-1 eth-1");
         router1.addInterface("ge0/0/0/2", "192.168.1.1/24");
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
         router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
-        router1.addInterface("ge0/0/0/5", "192.168.4.1/24");
-        router1.addInterface("ge0/0/0/6", "192.168.5.1/24");
-        router1.addInterface("ge0/0/0/7", "192.168.6.1/24");
-        router1.addInterface("ge0/0/0/8", "192.168.7.1/24");
-        /**
-         * Add a default Gateway
-         */
-        router1.addRouteEntry("0.0.0.0", "192.168.0.254", "192.168.0.1", router1.getInterfaceByName("ge0/0/0/1")); // Default GW
-        router1.addRouteEntry("192.168.8.1/32", "192.168.7.1");                                                    // Rota mais especifica
-        router1.printRoutingTable();
 
         /**
-         * Check if we have a route
+         * Default GW
          */
-        Optional<NRoutingEntry> route = router1.getNextHop("192.168.8.1");
+        router1.addRouteEntry("10.0.2.0/24", "10.0.0.254");
+        router1.addRouteEntry("0.0.0.0", "10.0.0.254");
+
+        NRouter router2 = new NRouter("router-2");
+        router2.addInterface("ge0/0/0/1", "10.0.0.254/24","LT:switch-1 eth-1");
+        router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
+        router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
+        router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
+
+        /**
+         * Exibe a tabela de roteamento dos roteadores
+         */
+        router1.printRoutingTable();
+        router2.printRoutingTable();
+
+        /**
+         * Creates a VSwitch with 2 Interfaces
+         */
+        NSwitch vSwitch = new NSwitch("switch-1");
+        /**
+         * Adiciona 2 interfaces
+         */
+        vSwitch.addInterface("eth-1", "LT:router-1");
+        vSwitch.addInterface("eth-2", "LT:router-2");
+        
+        /**
+         * Creates a connection from router-1.ge0/0/0/1 to switch-1.eth-1
+         */
+        vSwitch.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch.getInterfaceByName("eth-1"));
+        /**
+         * Creates a connection from router-2.ge0/0/0/1 to switch-1.eth-2
+         */
+        vSwitch.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch.getInterfaceByName("eth-2"));
+
+        
+        vSwitch.printInterfaces();
+        Optional<NRoutingEntry> route = router1.getNextHop("10.0.2.1");
 
         if (route.isPresent()) {
             /**
@@ -60,6 +86,5 @@ public class SimpleRouterExample {
             System.out.println("192.168.8.1 Reacheable:");
             route.get().print();
         }
-
     }
 }

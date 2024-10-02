@@ -53,4 +53,17 @@ public class BaseNe<T extends BaseInterface> {
         return name;
     }
 
+    public void printInterfaces() {
+        System.out.println("------------------------------------------------------------------------------------");
+        System.out.println("Device.........:[" + this.getName() + "]");
+        System.out.println("Interfaces.....:[" + this.interfaces.size() + "]");
+        System.out.println("------------------------------------------------------------------------------------");
+        String header = String.format("%-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "MAC Address", "Description");
+        System.out.println(header);
+        this.interfaces.forEach((k, v) -> {
+            String row = String.format("%-15s %-15s %-15s %-18s %-30s", v.getName(), v.getAdminStatus(), v.getOperStatus(), v.getMacAddress(), v.getDescription());
+            System.out.println(row);
+        });
+        System.out.println("------------------------------------------------------------------------------------");
+    }
 }

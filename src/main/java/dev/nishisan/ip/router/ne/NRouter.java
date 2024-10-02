@@ -67,7 +67,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
         return this.addRouteEntry(dst, nextHop, null, null);
     }
 
-    public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, String dev) {
+    public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, NRouterInterface dev) {
         /**
          * Ao adicionar uma rota devemos saber se o nextHop é alcançável
          */
@@ -77,7 +77,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
         if (n.isPresent()) {
             if (dev == null) {
                 if (n.get().getDev() != null) {
-                    dev = n.get().getDev().getName();
+                    dev = n.get().getDev();
                 }
             }
 
@@ -90,7 +90,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
         /**
          * Se n for null o nexthop não é alcançável, aí não podemos adicionar
          */
-        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, this.getInterfaceByName(dev));
+        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, dev);
         return this.mainRouteTable.addRouteEntry(entry);
     }
 

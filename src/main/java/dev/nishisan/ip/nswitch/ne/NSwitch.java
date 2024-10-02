@@ -46,4 +46,6 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
     public void connect(BaseInterface src, BaseInterface dst) {
     }
 
+    
+   
 }
