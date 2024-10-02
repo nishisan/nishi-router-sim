@@ -55,6 +55,28 @@ public class NRouter extends BaseNe<NRouterInterface> {
     }
 
     public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, String dev) {
+        /**
+         * Ao adicionar uma rota devemos saber se o nextHop é alcançável
+         */
+
+        NRoutingEntry n = this.mainRouteTable.getNextHop(nextHop);
+
+        if (n != null) {
+            if (dev == null) {
+                if (n.getDev() != null) {
+                    dev = n.getDev().getName();
+                }
+            }
+
+            if (src == null) {
+                if (n.getSrc() != null) {
+                    src = n.getSrc().toString();
+                }
+            }
+        }
+        /**
+         * Se n for null o nexthop não é alcançável, aí não podemos adicionar
+         */
         NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, this.getInterfaceByName(dev));
         return this.mainRouteTable.addRouteEntry(entry);
     }
@@ -63,11 +85,16 @@ public class NRouter extends BaseNe<NRouterInterface> {
         this.mainRouteTable.printRoutingTable();
     }
 
+    /**
+     * Simula um ping respeitando a tabela de roteamento
+     *
+     * @param target
+     */
     public void ping(String target) {
         System.out.println("Searching Routing Table for Target:[" + target + "] ");
         NRoutingEntry r = this.mainRouteTable.getNextHop(target);
         if (r != null) {
-            System.out.println("Next Hop Found:");
+            System.out.println("Using Route Entry:");
             r.print();
         } else {
             System.out.println("Next Hop Not Found...");

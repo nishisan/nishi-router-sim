@@ -42,14 +42,15 @@ public class BaseNe<T extends BaseInterface> {
         this.interfaces = interfaces;
     }
 
-    public T getInterfaceByName(String name){
+    public T getInterfaceByName(String name) {
+        if (name == null) {
+            return null;
+        }
         return this.getInterfaces().get(name);
     }
 
     public String getName() {
         return name;
     }
-    
-    
-    
+
 }

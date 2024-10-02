@@ -111,44 +111,20 @@ public class NRoutingTable {
         this.entries = entries;
     }
 
-    private NRoutingEntry getNextHop_(String destinationIp) {
-        NRoutingEntry bestMatch = null;
-        int bestMatchPrefixlen = -1;
-
-        IPAddress destinationAddress = new IPAddressString(destinationIp).getAddress();
-
-        for (Map.Entry<String, NRoutingEntry> entry : entries.entrySet()) {
-            NRoutingEntry route = entry.getValue();
-            IPAddress networkAddress = route.getDst();
-            int prefixLength = networkAddress.getPrefixLength();
-
-            if (networkAddress.contains(destinationAddress)) {
-                if (prefixLength > bestMatchPrefixlen) {
-                    bestMatch = route;
-                    bestMatchPrefixlen = prefixLength;
-                }
-            }
-        }
-
-        return bestMatch;
-    }
-
-    public NRoutingEntry getNextHop__(String destinationIp) {
-        IPAddress destinationAddress = new IPAddressString(destinationIp).getAddress();
-
-        return entries.entrySet().parallelStream()
-                .filter(entry -> entry.getValue().getDst().contains(destinationAddress))
-                .max(Comparator.comparingInt(entry -> entry.getValue().getDst().getPrefixLength()))
-                .map(Map.Entry::getValue)
-                .orElse(null);
-    }
-
+    /**
+     * Obtem o next hop da tabela de roteamento pela representação em ip
+     *
+     * @param destinationIp
+     * @return
+     */
     public NRoutingEntry getNextHop(String destinationIp) {
+        IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);
+        return this.getNextHop(destinationAddress);
+    }
+
+    public NRoutingEntry getNextHop(IPAddress destinationAddress) {
         Long s = System.currentTimeMillis();
         try {
-            
-            IPAddress destinationAddress = new IPAddressString(destinationIp).getAddress();
-
             return entries.entrySet().parallelStream()
                     .filter(entry -> entry.getValue().getDst().contains(destinationAddress))
                     .max(Comparator.comparingInt(entry -> {
@@ -160,8 +136,8 @@ public class NRoutingTable {
                     .orElse(null);
         } finally {
             Long e = System.currentTimeMillis();
-            Long t = e-s;
-            System.out.println("Took :["+t+"] (ms) To Search in:["+this.entries.size()+"] Entries");
+            Long t = e - s;
+            System.out.println("Took :[" + t + "] (ms) To Search in:[" + this.entries.size() + "] Entries");
         }
     }
 

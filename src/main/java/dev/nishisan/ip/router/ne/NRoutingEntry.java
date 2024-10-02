@@ -39,6 +39,13 @@ public class NRoutingEntry {
         if (dst != null) {
             if (dst.equals("0.0.0.0")) {
                 dst = "0.0.0.0/0";
+            }else{
+                if (!dst.contains("/")){
+                    //
+                    // Se não tem / assume /32
+                    //
+                    dst = dst + "/32";
+                }
             }
         } else {
             //
@@ -47,9 +54,15 @@ public class NRoutingEntry {
             dst = "0.0.0.0/0";
         }
 
-        this.dst = NRoutingEntry.getIpAddress(dst);
-        this.nextHop = NRoutingEntry.getIpAddress(nextHop);
-        this.src = NRoutingEntry.getIpAddress(src);
+        if (dst != null) {
+            this.dst = NRoutingEntry.getIpAddress(dst);
+        }
+        if (nextHop != null) {
+            this.nextHop = NRoutingEntry.getIpAddress(nextHop);
+        }
+        if (src != null) {
+            this.src = NRoutingEntry.getIpAddress(src);
+        }
         this.dev = dev;
     }
 
