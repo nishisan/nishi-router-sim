@@ -39,8 +39,8 @@ public class NRoutingEntry {
         if (dst != null) {
             if (dst.equals("0.0.0.0")) {
                 dst = "0.0.0.0/0";
-            }else{
-                if (!dst.contains("/")){
+            } else {
+                if (!dst.contains("/")) {
                     //
                     // Se não tem / assume /32
                     //
@@ -131,22 +131,26 @@ public class NRoutingEntry {
     }
 
     public void print() {
+        NRoutingEntry.print(this);
+    }
+
+    public static void print(NRoutingEntry e) {
         StringBuilder b = new StringBuilder();
         b.append("   ");
-        b.append(this.getDst().toPrefixBlock().toString());
-        if (this.getNextHop() != null) {
-            b.append(" via ").append(this.getNextHop().toString());
+        b.append(e.getDst().toPrefixBlock().toString());
+        if (e.getNextHop() != null) {
+            b.append(" via ").append(e.getNextHop().toString());
         }
-        if (this.getDev() != null) {
-            b.append(" dev ").append(this.getDev().getName());
-        }
-
-        if (this.getScope() != null) {
-            b.append(" scope ").append(this.getScope());
+        if (e.getDev() != null) {
+            b.append(" dev ").append(e.getDev().getName());
         }
 
-        if (this.getSrc() != null) {
-            b.append(" src ").append(this.getSrc().toInetAddress().getHostAddress());
+        if (e.getScope() != null) {
+            b.append(" scope ").append(e.getScope());
+        }
+
+        if (e.getSrc() != null) {
+            b.append(" src ").append(e.getSrc().toInetAddress().getHostAddress());
         }
 
         System.out.println(b.toString());

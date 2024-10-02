@@ -38,12 +38,16 @@ public class NRouterSimApp {
          */
         router1.addRouteEntry("10.10.10.10", null, null, "ge0/0/0/1");
 
-        router1.addRouteEntry("0.0.0.0", "10.10.10.10", null,null);
-        
+        router1.addRouteEntry("0.0.0.0", "10.10.10.10", null, null);
+
         /**
          * Default Gateway do Router 1
          */
-//        router1.addRouteEntry("0.0.0.0/0", "192.168.0.2", "192.168.0.1", "ge0/0/0/1");
+        router1.addRouteEntry("0.0.0.0/0", "192.168.0.2", "192.168.0.1", "ge0/0/0/1");
+        
+        /**
+         * Rota Bem Especifica
+         */
         router1.addRouteEntry("8.8.8.8/32", "192.168.4.254", "192.168.4.1", "ge0/0/0/5");
 
         NRouter router2 = new NRouter("router-2");

@@ -18,10 +18,10 @@
 package dev.nishisan.ip.router.ne;
 
 import inet.ipaddr.IPAddress;
-import inet.ipaddr.IPAddressString;
 import java.util.Comparator;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -117,9 +117,9 @@ public class NRoutingTable {
      * @param destinationIp
      * @return
      */
-    public NRoutingEntry getNextHop(String destinationIp) {
-        IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);
-        return this.getNextHop(destinationAddress);
+    public Optional<NRoutingEntry> getNextHop(String destinationIp) {
+        IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);        
+        return Optional.of(this.getNextHop(destinationAddress));
     }
 
     public NRoutingEntry getNextHop(IPAddress destinationAddress) {

@@ -19,6 +19,7 @@ package dev.nishisan.ip.router.ne;
 
 import dev.nishisan.ip.base.BaseNe;
 import dev.nishisan.ip.router.ne.NRoutingEntry.NRouteEntryScope;
+import java.util.Optional;
 
 public class NRouter extends BaseNe<NRouterInterface> {
 
@@ -54,23 +55,35 @@ public class NRouter extends BaseNe<NRouterInterface> {
         return iFace;
     }
 
+    public NRouterInterface addInterface(String name, String address, String description) {
+        NRouterInterface iFace = new NRouterInterface(name, address, this);
+        iFace.setDescription(description);
+        this.getInterfaces().put(name, iFace);
+        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
+        return iFace;
+    }
+
+    public NRoutingEntry addRouteEntry(String dst, String nextHop) {
+        return this.addRouteEntry(dst, nextHop, null, null);
+    }
+
     public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, String dev) {
         /**
          * Ao adicionar uma rota devemos saber se o nextHop é alcançável
          */
 
-        NRoutingEntry n = this.mainRouteTable.getNextHop(nextHop);
+        Optional<NRoutingEntry> n = this.mainRouteTable.getNextHop(nextHop);
 
-        if (n != null) {
+        if (n.isPresent()) {
             if (dev == null) {
-                if (n.getDev() != null) {
-                    dev = n.getDev().getName();
+                if (n.get().getDev() != null) {
+                    dev = n.get().getDev().getName();
                 }
             }
 
             if (src == null) {
-                if (n.getSrc() != null) {
-                    src = n.getSrc().toString();
+                if (n.get().getSrc() != null) {
+                    src = n.get().getSrc().toString();
                 }
             }
         }
@@ -92,13 +105,18 @@ public class NRouter extends BaseNe<NRouterInterface> {
      */
     public void ping(String target) {
         System.out.println("Searching Routing Table for Target:[" + target + "] ");
-        NRoutingEntry r = this.mainRouteTable.getNextHop(target);
-        if (r != null) {
+        Optional<NRoutingEntry> r = this.mainRouteTable.getNextHop(target);
+        if (r.isPresent()) {
             System.out.println("Using Route Entry:");
-            r.print();
+            r.get().print();
         } else {
             System.out.println("Next Hop Not Found...");
         }
+    }
+
+    public Optional<NRoutingEntry> getNextHop(String target) {
+        Optional<NRoutingEntry> r = this.mainRouteTable.getNextHop(target);
+        return r;
     }
 
 }
