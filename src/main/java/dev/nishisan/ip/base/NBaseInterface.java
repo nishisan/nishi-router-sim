@@ -17,6 +17,8 @@
  */
 package dev.nishisan.ip.base;
 
+import dev.nishisan.ip.packet.NPacket;
+import dev.nishisan.ip.packet.OnWireMsg;
 import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Objects;
@@ -28,7 +30,7 @@ import java.util.UUID;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 01.10.2024
  */
-public class BaseInterface {
+public class NBaseInterface {
 
     private String name;
     private String description = "";
@@ -51,65 +53,67 @@ public class BaseInterface {
         ADMIN_DOWN
     }
 
-    public BaseInterface(String name, BaseNe ne) {
+    public NBaseInterface(String name, BaseNe ne) {
         this.name = name;
         this.eventBus = ne.getEventBus();
-        this.macAddress = BaseInterface.generateMacAddress();
+        this.macAddress = NBaseInterface.generateMacAddress();
         this.ne = ne;
         /**
          *
          */
         this.eventBus.subscribe(m -> {
-
+            /**
+             * Check if oper status is up
+             */
             if (this.operStatus.equals(NIfaceOperStatus.OPER_UP)) {
+                /**
+                 * Check if interface has link
+                 */
                 if (this.link != null) {
                     if (!m.walked(this)) {
+//                        System.out.println("B Packet Start");
                         m.notifyWalk(this);
+                        /**
+                         * Apply latency if needed
+                         */
+                        if (this.link.getLatency() > 0) {
+                            try {
+                                //
+                                // Mimics Latency
+                                //
 
-                        if (this.link != null) {
-                            if (this.link.getLatency() > 0) {
-                                try {
-                                    //
-                                    // Mimics Latency
-                                    //
+                                Random r = new Random();
+                                Thread.sleep(this.link.getLatency());
 
-                                    Random r = new Random();
-                                    Thread.sleep(this.link.getLatency());
-
-                                    //
-                                    // Jitter
-                                    //
-                                    if (this.link.getJitter() > 0) {
-                                        Thread.sleep(r.nextInt(this.link.getJitter()));
-                                    }
-                                } catch (InterruptedException ex) {
+                                //
+                                // Jitter
+                                //
+                                if (this.link.getJitter() > 0) {
+                                    Thread.sleep(r.nextInt(this.link.getJitter()));
                                 }
+                            } catch (InterruptedException ex) {
                             }
                         }
-                        //
-                        // Verifica se temos link na interface
-                        //
 
                         StringBuilder msg = new StringBuilder();
                         msg.append("[").append(m.getClass().getSimpleName()).append("] - ");
                         msg.append("Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
                         msg.append(" Conected:[True]");
+                        System.out.println(msg);
+                        /**
+                         * Processa o pacote na interface local.
+                         */
+                        this.ne.processPacket(m, this);
+
                         //
                         // Obtem a ponta remota
                         //
-                        BaseInterface o = this.link.getOtherIface(this);
+                        NBaseInterface o = this.link.getOtherIface(this);
+                        //
+                        // Como tem Link, esse método propaga para o proximo
+                        //
                         o.getNe().sendOnWireMsg(m);
 
-                        if (m instanceof ArpRequest arp) {
-                            if (this.address != null) {
-                                if (this.address.equals(arp.getRequestAddress())) {
-                                    arp.setiFace(this);
-                                    m.reply(arp);
-                                }
-                            }
-                        }
-
-//                        System.out.println(msg.toString());
                     }
                 }
             }
@@ -236,12 +240,14 @@ public class BaseInterface {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final BaseInterface other = (BaseInterface) obj;
+        final NBaseInterface other = (NBaseInterface) obj;
         return Objects.equals(this.uid, other.uid);
     }
 
     public BaseNe getNe() {
         return ne;
     }
+    
+    
 
 }

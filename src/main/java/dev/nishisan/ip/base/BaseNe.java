@@ -17,6 +17,11 @@
  */
 package dev.nishisan.ip.base;
 
+import dev.nishisan.ip.packet.ArpRequest;
+import dev.nishisan.ip.packet.NPacket;
+import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.processor.IPacketProcessor;
+import dev.nishisan.ip.router.ne.NRouter;
 import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Collections;
@@ -29,18 +34,17 @@ import java.util.concurrent.CompletableFuture;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 01.10.2024
  */
-public abstract class BaseNe<T extends BaseInterface> {
+public abstract class BaseNe<T extends NBaseInterface> {
 
     private final String name;
-    /**
-     * Mimics the Broadcast
-     */
-    private final PublishSubject<OnWireMsg> eventBus = PublishSubject.create();
+    private NBroadCastDomain defaultBroadcastDomain = new NBroadCastDomain();
 
     private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
+    private Map<String, IPacketProcessor> processors = Collections.synchronizedMap(new LinkedHashMap());
 
     public BaseNe(String name) {
         this.name = name;
+        this.registerProcessors();
     }
 
     public Map<String, T> getInterfaces() {
@@ -63,7 +67,7 @@ public abstract class BaseNe<T extends BaseInterface> {
     }
 
     public PublishSubject<OnWireMsg> getEventBus() {
-        return eventBus;
+        return this.defaultBroadcastDomain.getEventBus();
     }
 
     public void pingBroadcast() {
@@ -71,12 +75,12 @@ public abstract class BaseNe<T extends BaseInterface> {
         m.onReply(response -> {
             System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
         });
-        this.eventBus.onNext(m);
+        this.defaultBroadcastDomain.getEventBus();
     }
 
-    public CompletableFuture<BaseInterface> sendArpRequest(String ip) {
+    public CompletableFuture<NBaseInterface> sendArpRequest(String ip) {
         ArpRequest r = new ArpRequest(ip);
-        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
+        CompletableFuture<NBaseInterface> future = new CompletableFuture<>();
         r.onReply(o -> {
             future.complete(o.getiFace());
         });
@@ -84,9 +88,10 @@ public abstract class BaseNe<T extends BaseInterface> {
         return future;
     }
 
-    public CompletableFuture<BaseInterface> sendArpRequest(IPAddress ip) {
+    public CompletableFuture<NBaseInterface> sendArpRequest(IPAddress ip) {
         ArpRequest r = new ArpRequest(ip);
-        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
+        CompletableFuture<NBaseInterface> future = new CompletableFuture<>();
+
         r.onReply(o -> {
             future.complete(o.getiFace());
         });
@@ -94,8 +99,6 @@ public abstract class BaseNe<T extends BaseInterface> {
         return future;
     }
 
-
-    
     public void pingBroadcast(OnWireMsg m) {
         m.onReply(response -> {
             System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
@@ -104,7 +107,7 @@ public abstract class BaseNe<T extends BaseInterface> {
     }
 
     protected void sendOnWireMsg(OnWireMsg m) {
-        this.eventBus.onNext(m);
+        this.defaultBroadcastDomain.getEventBus().onNext(m);
     }
 
     /**
@@ -116,6 +119,30 @@ public abstract class BaseNe<T extends BaseInterface> {
 
     public abstract void printInterfaces();
 
-   public abstract void forwardPacket(NPacket packet);
+    public abstract void forwardPacket(NPacket packet);
 
+    public void processPacket(OnWireMsg m, NBaseInterface iFace) {
+        /**
+         * Chama a implementação dos processadores registrados
+         */
+        this.getProcessors().forEach((k, p) -> {
+            p.processPacket(m, iFace);
+        });
+
+    }
+
+    public abstract void registerProcessors();
+
+    public void addProcessor(IPacketProcessor processor) {
+
+        this.processors.put(name, processor);
+    }
+
+    public Map<String, IPacketProcessor> getProcessors() {
+        return processors;
+    }
+
+    public NRouter asNrouter() {
+        return (NRouter) this;
+    }
 }

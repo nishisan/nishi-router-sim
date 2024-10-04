@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Lucas Nishimura <lucas.nishimura at gmail.com>
+ * Copyright (C) 2024 lucas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,37 +15,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.nswitch.ne;
+package dev.nishisan.ip.packet.processor;
 
 import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.packet.OnWireMsg;
 
 /**
  *
- * @author Lucas Nishimura <lucas.nishimura at gmail.com>
- * created 01.10.2024
+ * @author lucas
  */
-public class NSwitchInterface extends NBaseInterface {
+public interface IPacketProcessor<T extends OnWireMsg<T>> {
 
-    private NSwitch nSwitch;
+    public void processPacket(OnWireMsg m, NBaseInterface iFace);
 
-    public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch);
-        this.nSwitch = nSwitch;
-    }
-
-    public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch);
-        this.setDescription(description);
-        this.nSwitch = nSwitch;
-
-    }
-
-    public NSwitch getnSwitch() {
-        return nSwitch;
-    }
-
-    public void setnSwitch(NSwitch nSwitch) {
-        this.nSwitch = nSwitch;
-    }
-
+    public String getUuid();
 }

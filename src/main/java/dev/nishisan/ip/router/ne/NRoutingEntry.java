@@ -30,10 +30,24 @@ public class NRoutingEntry {
     private NRouterInterface dev;
     private Boolean directConneted = false;
     private Integer metric = 0;
+    private Integer adminDistance = 0;
+    private Integer distance = 0;
 
     private NRouteEntryScope scope;
 
-    public NRoutingEntry(String dst, String nextHop, String src, NRouterInterface dev) {
+    private NRouteType type;
+
+    public enum NRouteEntryScope {
+        link;
+    }
+
+    public enum NRouteType {
+        STATIC,
+        CONNECTED,
+        RIP
+    }
+
+    public NRoutingEntry(String dst, String nextHop, String src, NRouterInterface dev, NRouteType type) {
         /**
          * Sanitização
          */
@@ -67,15 +81,11 @@ public class NRoutingEntry {
         if (src != null) {
             this.src = NRoutingEntry.getIpAddress(src);
         }
+        this.type = type;
         this.dev = dev;
     }
 
-    public enum NRouteEntryScope {
-        link;
-
-    }
-
-    public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev) {
+    public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteType type) {
         this.dst = dst;
         if (nextHop == null) {
             this.setDirectConneted(true);
@@ -83,9 +93,10 @@ public class NRoutingEntry {
         this.nextHop = nextHop;
         this.src = src;
         this.dev = dev;
+        this.type = type;
     }
 
-    public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteEntryScope scope) {
+    public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteEntryScope scope, NRouteType type) {
         this.dst = dst;
         this.nextHop = nextHop;
         if (nextHop == null) {
@@ -94,6 +105,7 @@ public class NRoutingEntry {
         this.src = src;
         this.dev = dev;
         this.scope = scope;
+        this.type = type;
     }
 
     public IPAddress getDst() {
@@ -149,6 +161,11 @@ public class NRoutingEntry {
         StringBuilder b = new StringBuilder();
         b.append("   ");
         b.append(e.getDst().toPrefixBlock().toString());
+
+        b.append(" [")
+                .append(e.getAdminDistance())
+                .append("/").append(e.getMetric()).append("]");
+
         if (e.getNextHop() != null) {
             b.append(" via ").append(e.getNextHop().toString());
         }
@@ -164,7 +181,7 @@ public class NRoutingEntry {
             b.append(" src ").append(e.getSrc().toInetAddress().getHostAddress());
         }
 
-        if (e.getMetric()!= null) {
+        if (e.getMetric() != null) {
             b.append(" metric ").append(e.getMetric());
         }
 
@@ -196,6 +213,14 @@ public class NRoutingEntry {
     public NRoutingEntry setMetric(Integer metric) {
         this.metric = metric;
         return this;
+    }
+
+    public Integer getAdminDistance() {
+        return adminDistance;
+    }
+
+    public void setAdminDistance(Integer adminDistance) {
+        this.adminDistance = adminDistance;
     }
 
 }

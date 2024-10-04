@@ -44,9 +44,9 @@ public class SimpleRouterExample {
         /**
          * Add a default Gateway
          */
-        router1.addRouteEntry("0.0.0.0", "192.168.0.254", "192.168.0.1", router1.getInterfaceByName("ge0/0/0/1"));     // Default GW
-        router1.addRouteEntry("192.168.8.1/32", "192.168.7.1").setMetric(10);                                                                // Rota mais especifica
-        router1.addRouteEntry("192.168.8.1/32", "192.168.6.1").setMetric(20);                                                                // Rota mais especifica
+        router1.addStaticRouteEntry("0.0.0.0", "192.168.0.254", "192.168.0.1", router1.getInterfaceByName("ge0/0/0/1"));     // Default GW
+        router1.addStaticRouteEntry("192.168.8.1/32", "192.168.7.1").setMetric(10);                                                                // Rota mais especifica
+        router1.addStaticRouteEntry("192.168.8.1/32", "192.168.6.1").setMetric(20);                                                                // Rota mais especifica
         
         router1.printInterfaces(); // <- show int desc
         router1.printRoutingTable();

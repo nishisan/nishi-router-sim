@@ -15,8 +15,9 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.base;
+package dev.nishisan.ip.packet;
 
+import dev.nishisan.ip.base.NBaseInterface;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;
@@ -34,7 +35,7 @@ public class OnWireMsg<T extends OnWireMsg<T>> implements Serializable {
 
     private Integer vlanId = 0;
     private Consumer<T> replyCallback;
-    private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
+    private Map<String, NBaseInterface> walked = new ConcurrentHashMap<>();
 
     public String getUid() {
         return uid;
@@ -46,7 +47,10 @@ public class OnWireMsg<T extends OnWireMsg<T>> implements Serializable {
 
     public void reply(T response) {
         if (this.replyCallback != null) {
+            System.out.println("Reply from: " + this.uid + " To:" + response.getUid());
             this.replyCallback.accept(response);
+        } else {
+            System.out.println("Reply Is Null!");
         }
     }
 
@@ -71,11 +75,11 @@ public class OnWireMsg<T extends OnWireMsg<T>> implements Serializable {
         this.replyCallback = replyCallback;
     }
 
-    public Boolean walked(BaseInterface i) {
+    public Boolean walked(NBaseInterface i) {
         return this.walked.containsKey(i.getUid());
     }
 
-    public void notifyWalk(BaseInterface i) {
+    public void notifyWalk(NBaseInterface i) {
         this.walked.put(i.getUid(), i);
     }
 

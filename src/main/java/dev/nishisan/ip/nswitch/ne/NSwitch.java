@@ -17,10 +17,11 @@
  */
 package dev.nishisan.ip.nswitch.ne;
 
-import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.base.BaseNe;
 import dev.nishisan.ip.base.NLink;
-import dev.nishisan.ip.base.NPacket;
+import dev.nishisan.ip.packet.NPacket;
+import dev.nishisan.ip.packet.processor.ArpPacketProcessor;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         NSwitchInterface iFace = new NSwitchInterface(name, description, this);
         this.getInterfaces().put(name, iFace);
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
         return iFace;
     }
@@ -53,9 +54,8 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         return iFace;
     }
 
-    public NLink connect(BaseInterface src, BaseInterface dst) {
+    public NLink connect(NBaseInterface src, NBaseInterface dst) {
         NLink link = new NLink(src, dst);
-//        System.out.println("Connection from:[" + src.getNe().getType() + "] to: [" + dst.getNe().getType() + "] Created!");
         this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
         return link;
     }
@@ -84,6 +84,11 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
             System.out.println(row);
         });
         System.out.println("-----------------------------------------------------------------------------------------------------");
+    }
+
+    @Override
+    public void registerProcessors() {
+//        this.addProcessor(new ArpPacketProcessor());
     }
 
 }

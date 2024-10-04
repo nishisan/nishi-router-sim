@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.router.examples;
 
-import dev.nishisan.ip.base.NPacket;
+import dev.nishisan.ip.packet.NPacket;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
 
@@ -42,7 +42,7 @@ public class SimplePacketForwardingLoopExample {
         /**
          * Router 1 - Default GW is router-2
          */
-        router1.addRouteEntry("0.0.0.0", "10.0.0.254");
+        router1.addStaticRouteEntry("0.0.0.0", "10.0.0.254");
 
         NRouter router2 = new NRouter("router-2");
         router2.addInterface("ge0/0/0/1", "10.0.0.254/24", "LT:switch-1 eth-1");
@@ -53,7 +53,7 @@ public class SimplePacketForwardingLoopExample {
         /**
          * Router 2 Default Gw is router-1
          */
-        router2.addRouteEntry("0.0.0.0", "10.0.0.1");
+        router2.addStaticRouteEntry("0.0.0.0", "10.0.0.1");
 
         /**
          * Exibe a tabela de roteamento dos roteadores

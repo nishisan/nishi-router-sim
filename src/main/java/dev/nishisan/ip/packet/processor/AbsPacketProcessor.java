@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Lucas Nishimura <lucas.nishimura at gmail.com>
+ * Copyright (C) 2024 lucas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -15,32 +15,21 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.router.ne;
+package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import inet.ipaddr.IPAddressString;
+import dev.nishisan.ip.packet.OnWireMsg;
+import java.util.UUID;
 
-public class NRouterInterface extends NBaseInterface {
+/**
+ *
+ * @author lucas
+ */
+public abstract class AbsPacketProcessor<T extends OnWireMsg<T>> implements IPacketProcessor<T> {
 
-    private NRouter router;
+    private final String uuid = UUID.randomUUID().toString();
 
-    public NRouterInterface(String name, NRouter router) {
-        super(name,router);
-        this.router = router;
-    }
-
-    public NRouterInterface(String name, String address, NRouter router) {
-        super(name,router);
-        this.setAddress(new IPAddressString(address).getAddress());
-        this.router = router;
-    }
-
-    public NRouter getRouter() {
-        return router;
-    }
-
-    public void setRouter(NRouter router) {
-        this.router = router;
+    public String getUuid() {
+        return uuid;
     }
 
 }

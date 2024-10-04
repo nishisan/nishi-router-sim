@@ -15,37 +15,44 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.nswitch.ne;
+package dev.nishisan.ip.packet;
 
 import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.router.ne.NRoutingEntry;
+import inet.ipaddr.IPAddress;
 
 /**
  *
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
- * created 01.10.2024
+ * created 02.10.2024
  */
-public class NSwitchInterface extends NBaseInterface {
+public class ArpRequest extends OnWireMsg<ArpRequest> {
 
-    private NSwitch nSwitch;
+    private final IPAddress requestAddress;
 
-    public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch);
-        this.nSwitch = nSwitch;
+    private NBaseInterface iFace;
+    
+    public ArpRequest(String requestAddress) {
+        this.requestAddress = NRoutingEntry.getIpAddress(requestAddress);
+    }
+    
+    public ArpRequest(IPAddress requestAddress) {
+        this.requestAddress = requestAddress;
     }
 
-    public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch);
-        this.setDescription(description);
-        this.nSwitch = nSwitch;
-
+    public IPAddress getRequestAddress() {
+        return requestAddress;
     }
 
-    public NSwitch getnSwitch() {
-        return nSwitch;
+    public NBaseInterface getiFace() {
+        return iFace;
     }
 
-    public void setnSwitch(NSwitch nSwitch) {
-        this.nSwitch = nSwitch;
+    public void setiFace(NBaseInterface iFace) {
+        this.iFace = iFace;
     }
 
+    
+    
 }

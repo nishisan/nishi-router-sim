@@ -17,12 +17,16 @@
  */
 package dev.nishisan.ip.router.ne;
 
-import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.base.BaseNe;
-import dev.nishisan.ip.base.NPacket;
+import dev.nishisan.ip.packet.NPacket;
+import dev.nishisan.ip.packet.NRipV1Announce;
+import dev.nishisan.ip.packet.processor.ArpPacketProcessor;
+import dev.nishisan.ip.packet.processor.RipV1PacketProcessor;
 import dev.nishisan.ip.router.ne.NRoutingEntry.NRouteEntryScope;
 import inet.ipaddr.IPAddress;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class NRouter extends BaseNe<NRouterInterface> {
@@ -55,10 +59,10 @@ public class NRouter extends BaseNe<NRouterInterface> {
     public NRouterInterface addInterface(String name, String address) {
         NRouterInterface iFace = new NRouterInterface(name, address, this);
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
         this.getInterfaces().put(name, iFace);
-        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(),
+        this.mainRouteTable.addStaticRouteEntry(iFace.getAddress().toPrefixBlock(),
                 null,
                 iFace.getAddress(),
                 iFace, NRouteEntryScope.link);
@@ -68,19 +72,42 @@ public class NRouter extends BaseNe<NRouterInterface> {
     public NRouterInterface addInterface(String name, String address, String description) {
         NRouterInterface iFace = new NRouterInterface(name, address, this);
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
         iFace.setDescription(description);
         this.getInterfaces().put(name, iFace);
-        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
+        this.mainRouteTable.addStaticRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
         return iFace;
     }
 
-    public NRoutingEntry addRouteEntry(String dst, String nextHop) {
-        return this.addRouteEntry(dst, nextHop, null, null);
+    public NRoutingEntry addStaticRouteEntry(String dst, String nextHop) {
+        return this.addStaticRouteEntry(dst, nextHop, null, null);
     }
 
-    public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, NRouterInterface dev) {
+    public NRoutingEntry addRipRouteEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev) {
+
+        Optional<NRoutingEntry> n = this.mainRouteTable.getNextHop(nextHop);
+
+        if (n.isPresent()) {
+            if (dev == null) {
+                if (n.get().getDev() != null) {
+                    dev = n.get().getDev();
+                }
+            }
+
+            if (src == null) {
+                if (n.get().getSrc() != null) {
+                    src = n.get().getSrc();
+                }
+            }
+        }
+
+        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, dev, NRoutingEntry.NRouteType.RIP);
+        entry.setAdminDistance(120);
+        return this.mainRouteTable.addRoute(entry);
+    }
+
+    public NRoutingEntry addStaticRouteEntry(String dst, String nextHop, String src, NRouterInterface dev) {
         /**
          * Ao adicionar uma rota devemos saber se o nextHop é alcançável
          */
@@ -103,8 +130,9 @@ public class NRouter extends BaseNe<NRouterInterface> {
         /**
          * Se n for null o nexthop não é alcançável, aí não podemos adicionar
          */
-        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, dev);
-        return this.mainRouteTable.addRouteEntry(entry);
+        NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, dev, NRoutingEntry.NRouteType.STATIC);
+        entry.setAdminDistance(1);
+        return this.mainRouteTable.addRoute(entry);
     }
 
     public void printRoutingTable() {
@@ -177,7 +205,6 @@ public class NRouter extends BaseNe<NRouterInterface> {
                         p.setConnected(true);
                         p.stopForwarding();
 
-                       
                         //
                         //Raise Back round
                         //
@@ -186,8 +213,8 @@ public class NRouter extends BaseNe<NRouterInterface> {
                             // Answer only for reply
                             //
                             routeEntry.get().getDev().sendPacket(p.createReply());
-                        }else{
-                            if (p.getSource()!=null){
+                        } else {
+                            if (p.getSource() != null) {
                                 p.getSource().reply();
                             }
                         }
@@ -211,7 +238,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
                     }).orTimeout(p.getTimeout(), TimeUnit.SECONDS).exceptionally(ex -> {
                         // Tratamento em caso de timeout ou exceção
                         ex.printStackTrace();
-                        System.out.println("Arp Timeout" + ex.getMessage());
+                        System.out.println("Arp Timeout:" + ex.getMessage());
                         return null;
                     }).join();
 
@@ -240,6 +267,29 @@ public class NRouter extends BaseNe<NRouterInterface> {
             System.out.println(row);
         });
         System.out.println("-----------------------------------------------------------------------------------------------------");
+    }
+
+    @Override
+    public void registerProcessors() {
+        this.addProcessor(new ArpPacketProcessor());
+        this.addProcessor(new RipV1PacketProcessor());
+    }
+
+    /**
+     * Monta um anuncio RIP :)
+     *
+     * @return
+     */
+    public CompletableFuture<NRipV1Announce> sendRipAnnouce(NRouterInterface i) {
+        NRipV1Announce r = new NRipV1Announce();
+        r.setSource(i.getAddress());
+        r.getNetworks().addAll(this.mainRouteTable.getEntries().values());
+        CompletableFuture<NRipV1Announce> future = new CompletableFuture<>();
+        r.onReply(o -> {
+            future.complete(o);
+        });
+        this.sendOnWireMsg(r);
+        return future;
     }
 
 }

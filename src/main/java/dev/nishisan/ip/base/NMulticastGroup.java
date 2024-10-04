@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Lucas Nishimura <lucas.nishimura at gmail.com>
+ * Copyright (C) 2024 lucas
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,40 +17,33 @@
  */
 package dev.nishisan.ip.base;
 
-import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
+import java.util.List;
 
 /**
  *
- * @author Lucas Nishimura <lucas.nishimura at gmail.com>
- * created 02.10.2024
+ * @author lucas
  */
-public class ArpRequest extends OnWireMsg<ArpRequest> {
+public class NMulticastGroup {
 
-    private final IPAddress requestAddress;
+    private IPAddress mcastGroup; // 239.1.1.1
 
-    private BaseInterface iFace;
-    
-    public ArpRequest(String requestAddress) {
-        this.requestAddress = NRoutingEntry.getIpAddress(requestAddress);
-    }
-    
-    public ArpRequest(IPAddress requestAddress) {
-        this.requestAddress = requestAddress;
+    private List<NBaseInterface> subscribers;
+
+    public IPAddress getMcastGroup() {
+        return mcastGroup;
     }
 
-    public IPAddress getRequestAddress() {
-        return requestAddress;
+    public void setMcastGroup(IPAddress mcastGroup) {
+        this.mcastGroup = mcastGroup;
     }
 
-    public BaseInterface getiFace() {
-        return iFace;
+    public List<NBaseInterface> getSubscribers() {
+        return subscribers;
     }
 
-    public void setiFace(BaseInterface iFace) {
-        this.iFace = iFace;
+    public void setSubscribers(List<NBaseInterface> subscribers) {
+        this.subscribers = subscribers;
     }
 
-    
-    
 }

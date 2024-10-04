@@ -30,6 +30,7 @@ public class NRoutingTable {
 
     private String name;
     private NRouter router;
+
     private Map<String, NRoutingEntry> entries = Collections.synchronizedMap(new LinkedHashMap());
 
     public NRoutingTable(String name, NRouter router) {
@@ -37,21 +38,19 @@ public class NRoutingTable {
         this.router = router;
     }
 
-    public NRoutingEntry addRouteEntry(IPAddress dst, IPAddress nextHope, IPAddress src, NRouterInterface dev) {
-        NRoutingEntry entry = new NRoutingEntry(dst.toPrefixBlock(), nextHope, src, dev);
+    public NRoutingEntry addStaticRouteEntry(IPAddress dst, IPAddress nextHope, IPAddress src, NRouterInterface dev) {
+        NRoutingEntry entry = new NRoutingEntry(dst.toPrefixBlock(), nextHope, src, dev, NRoutingEntry.NRouteType.STATIC);
+        return this.addRoute(entry);
+    }
+
+    public NRoutingEntry addRoute(NRoutingEntry entry) {
         this.entries.put(entry.getUid(), entry);
         return entry;
     }
 
-    public NRoutingEntry addRouteEntry(NRoutingEntry entry) {
-        this.entries.put(entry.getUid(), entry);
-        return entry;
-    }
-
-    public NRoutingEntry addRouteEntry(IPAddress dst, IPAddress nextHope, IPAddress src, NRouterInterface dev, NRoutingEntry.NRouteEntryScope scope) {
-        NRoutingEntry entry = new NRoutingEntry(dst.toPrefixBlock(), nextHope, src, dev, scope);
-        this.entries.put(entry.getUid(), entry);
-        return entry;
+    public NRoutingEntry addStaticRouteEntry(IPAddress dst, IPAddress nextHope, IPAddress src, NRouterInterface dev, NRoutingEntry.NRouteEntryScope scope) {
+        NRoutingEntry entry = new NRoutingEntry(dst.toPrefixBlock(), nextHope, src, dev, scope, NRoutingEntry.NRouteType.STATIC);
+        return this.addRoute(entry);
     }
 
     public void printRoutingTable() {
@@ -67,9 +66,13 @@ public class NRoutingTable {
             StringBuilder b = new StringBuilder();
             b.append(idx.get()).append(" - ");
             b.append(v.getDst().toPrefixBlock().toString());
+            b.append(" [")
+                    .append(v.getAdminDistance())
+                    .append("/").append(v.getMetric()).append("]");
             if (v.getNextHop() != null) {
                 b.append(" via ").append(v.getNextHop().toString());
             }
+
             if (v.getDev() != null) {
                 b.append(" dev ").append(v.getDev().getName());
             }
@@ -130,6 +133,12 @@ public class NRoutingTable {
         return this.getNextHop(destinationAddress);
     }
 
+    /**
+     * Computes the best route based on métric and admin distance.é
+     *
+     * @param destinationAddress
+     * @return
+     */
     public Optional<NRoutingEntry> getNextHop(IPAddress destinationAddress) {
         Long s = System.currentTimeMillis();
         try {

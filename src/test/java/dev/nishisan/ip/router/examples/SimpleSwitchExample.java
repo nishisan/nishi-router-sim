@@ -40,8 +40,8 @@ public class SimpleSwitchExample {
         /**
          * Default GW
          */
-        router1.addRouteEntry("10.0.2.0/24", "10.0.0.254");
-        router1.addRouteEntry("0.0.0.0", "10.0.0.254");
+        router1.addStaticRouteEntry("10.0.2.0/24", "10.0.0.254");
+        router1.addStaticRouteEntry("0.0.0.0", "10.0.0.254");
         
         NRouter router2 = new NRouter("router-2");
         router2.addInterface("ge0/0/0/1", "10.0.0.254/24", "LT:switch-1 eth-1");
