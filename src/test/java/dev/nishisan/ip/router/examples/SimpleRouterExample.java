@@ -57,8 +57,21 @@ public class SimpleRouterExample {
             /**
              * Prints the route used like: ip route get to 192.168.8.1
              */
-            System.out.println("192.168.8.1 Reacheable:");
+            System.out.println("192.168.1.2 is reacheable via");
             route.get().print();
+        }
+
+        /**
+         * Check if we have a route
+         */
+        Optional<NRoutingEntry> localRoute = router1.getNextHop("192.168.1.2");
+
+        if (localRoute.isPresent()) {
+            /**
+             * Prints the route used like: ip route get to 192.168.8.1
+             */
+            System.out.println("192.168.1.2 is reacheable via");
+            localRoute.get().print();
         }
 
     }

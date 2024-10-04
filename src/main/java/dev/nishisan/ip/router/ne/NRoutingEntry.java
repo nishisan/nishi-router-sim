@@ -28,6 +28,7 @@ public class NRoutingEntry {
     private IPAddress src;
     private String uid = UUID.randomUUID().toString();
     private NRouterInterface dev;
+    private Boolean directConneted = false;
 
     private NRouteEntryScope scope;
 
@@ -59,6 +60,8 @@ public class NRoutingEntry {
         }
         if (nextHop != null) {
             this.nextHop = NRoutingEntry.getIpAddress(nextHop);
+        } else {
+            this.setDirectConneted(true);
         }
         if (src != null) {
             this.src = NRoutingEntry.getIpAddress(src);
@@ -73,6 +76,9 @@ public class NRoutingEntry {
 
     public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev) {
         this.dst = dst;
+        if (nextHop == null) {
+            this.setDirectConneted(true);
+        }
         this.nextHop = nextHop;
         this.src = src;
         this.dev = dev;
@@ -81,6 +87,9 @@ public class NRoutingEntry {
     public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteEntryScope scope) {
         this.dst = dst;
         this.nextHop = nextHop;
+        if (nextHop == null) {
+            this.setDirectConneted(true);
+        }
         this.src = src;
         this.dev = dev;
         this.scope = scope;
@@ -153,7 +162,19 @@ public class NRoutingEntry {
             b.append(" src ").append(e.getSrc().toInetAddress().getHostAddress());
         }
 
+        if (e.getDirectConneted()) {
+            b.append(" direct connected ");
+        }
+
         System.out.println(b.toString());
+    }
+
+    public Boolean getDirectConneted() {
+        return directConneted;
+    }
+
+    public void setDirectConneted(Boolean directConneted) {
+        this.directConneted = directConneted;
     }
 
     public static IPAddress getIpAddress(String ip) {

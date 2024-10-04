@@ -17,6 +17,7 @@
  */
 package dev.nishisan.ip.router.ne;
 
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
 import dev.nishisan.ip.router.ne.NRoutingEntry.NRouteEntryScope;
 import java.util.Optional;
@@ -50,13 +51,22 @@ public class NRouter extends BaseNe<NRouterInterface> {
      */
     public NRouterInterface addInterface(String name, String address) {
         NRouterInterface iFace = new NRouterInterface(name, address, this);
+        if (iFace.getLink()==null){
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+        }
         this.getInterfaces().put(name, iFace);
-        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
+        this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), 
+                null, 
+                iFace.getAddress(), 
+                iFace, NRouteEntryScope.link);
         return iFace;
     }
 
     public NRouterInterface addInterface(String name, String address, String description) {
         NRouterInterface iFace = new NRouterInterface(name, address, this);
+        if (iFace.getLink()==null){
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+        }
         iFace.setDescription(description);
         this.getInterfaces().put(name, iFace);
         this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);

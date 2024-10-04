@@ -81,6 +81,9 @@ public class NRoutingTable {
             if (v.getSrc() != null) {
                 b.append(" src ").append(v.getSrc().toInetAddress().getHostAddress());
             }
+            if (v.getDirectConneted()) {
+                b.append(" direct connected ");
+            }
             idx.incrementAndGet();
             System.out.println(b.toString());
 
