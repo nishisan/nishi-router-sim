@@ -81,6 +81,10 @@ public class NRoutingTable {
             if (v.getSrc() != null) {
                 b.append(" src ").append(v.getSrc().toInetAddress().getHostAddress());
             }
+
+            if (v.getMetric() != null) {
+                b.append(" metric ").append(v.getMetric());
+            }
             if (v.getDirectConneted()) {
                 b.append(" direct connected ");
             }
@@ -123,25 +127,29 @@ public class NRoutingTable {
      */
     public Optional<NRoutingEntry> getNextHop(String destinationIp) {
         IPAddress destinationAddress = NRoutingEntry.getIpAddress(destinationIp);
-        return Optional.of(this.getNextHop(destinationAddress));
+        return this.getNextHop(destinationAddress);
     }
 
-    public NRoutingEntry getNextHop(IPAddress destinationAddress) {
+    public Optional<NRoutingEntry> getNextHop(IPAddress destinationAddress) {
         Long s = System.currentTimeMillis();
         try {
-            return entries.entrySet().parallelStream()
+            NRoutingEntry r = entries.entrySet().parallelStream()
                     .filter(entry -> entry.getValue().getDst().contains(destinationAddress))
-                    .max(Comparator.comparingInt(entry -> {
-                        int prefixLength = entry.getValue().getDst().getPrefixLength();
-                        return entry.getKey().equals("0.0.0.0/0") ? prefixLength - 1 : prefixLength;
+                    .max(Comparator.<Map.Entry<String, NRoutingEntry>>comparingInt(entry -> {
+                        // Priorizar rotas mais específicas com base no comprimento do prefixo
+                        return entry.getValue().getDst().getPrefixLength();
+                    }).thenComparingInt(entry -> {
+                        // Em caso de prefixos iguais, preferir a rota com menor métrica
+                        return entry.getValue().getMetric() * -1;
                     }))
                     .map(Map.Entry::getValue)
                     .orElse(null);
+            
+            return Optional.ofNullable(r);
         } finally {
             Long e = System.currentTimeMillis();
             Long t = e - s;
             System.out.println("Took :[" + t + "] (ms) To Search in:[" + this.entries.size() + "] Entries");
         }
     }
-
 }

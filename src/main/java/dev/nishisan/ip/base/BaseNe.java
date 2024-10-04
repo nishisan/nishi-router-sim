@@ -17,10 +17,12 @@
  */
 package dev.nishisan.ip.base;
 
+import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 /**
  *
@@ -33,7 +35,7 @@ public abstract class BaseNe<T extends BaseInterface> {
     /**
      * Mimics the Broadcast
      */
-    private final PublishSubject<ZeroLayerMsg> eventBus = PublishSubject.create();
+    private final PublishSubject<OnWireMsg> eventBus = PublishSubject.create();
 
     private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
 
@@ -60,22 +62,48 @@ public abstract class BaseNe<T extends BaseInterface> {
         return name;
     }
 
-    public PublishSubject<ZeroLayerMsg> getEventBus() {
+    public PublishSubject<OnWireMsg> getEventBus() {
         return eventBus;
     }
 
     public void pingBroadcast() {
-        ZeroLayerMsg m = new ZeroLayerMsg();
+        OnWireMsg m = new OnWireMsg();
         m.onReply(response -> {
             System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
         });
         this.eventBus.onNext(m);
     }
 
-    public void pingBroadcast(ZeroLayerMsg m) {
+    public CompletableFuture<BaseInterface> sendArpRequest(String ip) {
+        ArpRequest r = new ArpRequest(ip);
+        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
+        r.onReply(o -> {
+            future.complete(o.getiFace());
+        });
+        this.sendOnWireMsg(r);
+        return future;
+    }
+
+    public CompletableFuture<BaseInterface> sendArpRequest(IPAddress ip) {
+        ArpRequest r = new ArpRequest(ip);
+        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
+        r.onReply(o -> {
+            future.complete(o.getiFace());
+        });
+        this.sendOnWireMsg(r);
+        return future;
+    }
+
+
+    
+    public void pingBroadcast(OnWireMsg m) {
         m.onReply(response -> {
             System.out.println("Resposta recebida para Msg [" + m.getUid() + "]: " + response);
         });
+
+    }
+
+    protected void sendOnWireMsg(OnWireMsg m) {
         this.eventBus.onNext(m);
     }
 
@@ -100,4 +128,7 @@ public abstract class BaseNe<T extends BaseInterface> {
         });
         System.out.println("------------------------------------------------------------------------------------");
     }
+
+   public abstract void forwardPacket(NPacket packet);
+
 }

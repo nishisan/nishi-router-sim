@@ -20,6 +20,7 @@ package dev.nishisan.ip.nswitch.ne;
 import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
 import dev.nishisan.ip.base.NLink;
+import dev.nishisan.ip.base.NPacket;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -64,4 +65,11 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         return "SWITCH";
     }
 
+    @Override
+    public void forwardPacket(NPacket packet) {
+    
+    }
+
+    
+    
 }

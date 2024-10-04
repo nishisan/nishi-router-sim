@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 lucas
+ * Copyright (C) 2024 Lucas Nishimura <lucas.nishimura at gmail.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -17,15 +17,17 @@
  */
 package dev.nishisan.ip.router.examples;
 
+import dev.nishisan.ip.base.NPacket;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
 
 /**
  *
- * @author lucas
+ * @author Lucas Nishimura <lucas.nishimura at gmail.com>
+ * created 03.10.2024
  */
-public class SimpleSwitchExample {
-    
+public class SimplePacketForwardingExample {
+
     public static void main(String[] args) {
 
         /**
@@ -42,12 +44,13 @@ public class SimpleSwitchExample {
          */
         router1.addRouteEntry("10.0.2.0/24", "10.0.0.254");
         router1.addRouteEntry("0.0.0.0", "10.0.0.254");
-        
+
         NRouter router2 = new NRouter("router-2");
         router2.addInterface("ge0/0/0/1", "10.0.0.254/24", "LT:switch-1 eth-1");
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
         router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
+        router2.addInterface("ge0/0/0/5", "8.8.8.8");
 
         /**
          * Exibe a tabela de roteamento dos roteadores
@@ -63,36 +66,23 @@ public class SimpleSwitchExample {
         vSwitch1.addInterface("eth-1", "LT:router-1");
         vSwitch1.addInterface("eth-2", "");
         vSwitch1.addInterface("eth-3", "LT:switch-2");
-        
+
         NSwitch vSwitch2 = new NSwitch("switch-2");
         vSwitch2.addInterface("eth-1", "LT:router-2");
         vSwitch2.addInterface("eth-2", "");
         vSwitch2.addInterface("eth-3", "LT:switch-1");
-        
+
         vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));
-        
+
         vSwitch2.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch2.getInterfaceByName("eth-1"));
-        
+
         vSwitch1.connect(vSwitch1.getInterfaceByName("eth-3"), vSwitch2.getInterfaceByName("eth-3"));
 
-        /**
-         * Avalia se o dominio de broadcast se propaga pela interface do
-         * router1->switch-1->switch-2-> router-2
-         */
-        router1.sendArpRequest("10.0.0.254").thenAccept(i -> {
-        });
+        NPacket samplePacket = NPacket.build("200.1.1.1", "8.8.8.8");
 
-//        vSwitch1.printInterfaces();
-//        vSwitch2.printInterfaces();
-//        Optional<NRoutingEntry> route = router1.getNextHop("10.0.2.1");
-//
-//        if (route.isPresent()) {
-//            /**
-//             * Prints the route used like: ip route get to 192.168.8.1
-//             */
-//            System.out.println("192.168.8.1 Reacheable:");
-//            route.get().print();
-//        }
+        /**
+         * Injects a packet on the router interface directly
+         */
+        router1.getInterfaceByName("ge0/0/0/4").packetReceive(samplePacket);
     }
-    
 }

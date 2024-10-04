@@ -28,23 +28,23 @@ import java.util.function.Consumer;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 02.10.2024
  */
-public class ZeroLayerMsg implements Serializable {
+public class OnWireMsg<T extends OnWireMsg<T>> implements Serializable {
 
     private String uid = UUID.randomUUID().toString();
 
     private Integer vlanId = 0;
-    private Consumer<String> replyCallback;
+    private Consumer<T> replyCallback;
     private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
 
     public String getUid() {
         return uid;
     }
 
-    public void onReply(Consumer<String> callback) {
+    public void onReply(Consumer<T> callback) {
         this.replyCallback = callback;
     }
 
-    public void reply(String response) {
+    public void reply(T response) {
         if (this.replyCallback != null) {
             this.replyCallback.accept(response);
         }
@@ -63,11 +63,11 @@ public class ZeroLayerMsg implements Serializable {
         this.vlanId = vlanId;
     }
 
-    public Consumer<String> getReplyCallback() {
+    public Consumer<T> getReplyCallback() {
         return replyCallback;
     }
 
-    public void setReplyCallback(Consumer<String> replyCallback) {
+    public void setReplyCallback(Consumer<T> replyCallback) {
         this.replyCallback = replyCallback;
     }
 

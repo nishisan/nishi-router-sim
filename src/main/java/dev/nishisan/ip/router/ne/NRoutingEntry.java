@@ -29,6 +29,7 @@ public class NRoutingEntry {
     private String uid = UUID.randomUUID().toString();
     private NRouterInterface dev;
     private Boolean directConneted = false;
+    private Integer metric = 0;
 
     private NRouteEntryScope scope;
 
@@ -135,8 +136,9 @@ public class NRoutingEntry {
         return scope;
     }
 
-    public void setScope(NRouteEntryScope scope) {
+    public NRoutingEntry setScope(NRouteEntryScope scope) {
         this.scope = scope;
+        return this;
     }
 
     public void print() {
@@ -162,6 +164,10 @@ public class NRoutingEntry {
             b.append(" src ").append(e.getSrc().toInetAddress().getHostAddress());
         }
 
+        if (e.getMetric()!= null) {
+            b.append(" metric ").append(e.getMetric());
+        }
+
         if (e.getDirectConneted()) {
             b.append(" direct connected ");
         }
@@ -173,12 +179,23 @@ public class NRoutingEntry {
         return directConneted;
     }
 
-    public void setDirectConneted(Boolean directConneted) {
+    public NRoutingEntry setDirectConneted(Boolean directConneted) {
         this.directConneted = directConneted;
+        return this;
     }
 
     public static IPAddress getIpAddress(String ip) {
         IPAddressString s = new IPAddressString(ip);
         return s.getAddress();
     }
+
+    public Integer getMetric() {
+        return metric;
+    }
+
+    public NRoutingEntry setMetric(Integer metric) {
+        this.metric = metric;
+        return this;
+    }
+
 }

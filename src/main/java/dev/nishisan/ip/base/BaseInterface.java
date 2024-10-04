@@ -38,7 +38,7 @@ public class BaseInterface {
     private NIfaceAdminStatus adminStatus = NIfaceAdminStatus.ADMIN_UP;
     private final BaseNe ne;
     private NLink link;
-    private final PublishSubject<ZeroLayerMsg> eventBus;
+    private final PublishSubject<OnWireMsg> eventBus;
     private String uid = UUID.randomUUID().toString();
 
     public enum NIfaceOperStatus {
@@ -70,14 +70,24 @@ public class BaseInterface {
                         // Verifica se temos link na interface
                         //
 
-                        StringBuilder msg = new StringBuilder("Zero Layer Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
-
+                        StringBuilder msg = new StringBuilder();
+                        msg.append("[").append(m.getClass().getSimpleName()).append("] - ");
+                        msg.append("Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
                         msg.append(" Conected:[True]");
                         //
                         // Obtem a ponta remota
                         //
                         BaseInterface o = this.link.getOtherIface(this);
-                        o.getNe().pingBroadcast(m);
+                        o.getNe().sendOnWireMsg(m);
+
+                        if (m instanceof ArpRequest arp) {
+                            if (this.address != null) {
+                                if (this.address.equals(arp.getRequestAddress())) {
+                                    arp.setiFace(this);
+                                    m.reply(arp);
+                                }
+                            }
+                        }
 
                         System.out.println(msg.toString());
 
@@ -109,6 +119,23 @@ public class BaseInterface {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void packetReceive(NPacket p) {
+        if (this.ne.getType().equals("ROUTER")) {
+            //
+            // If its a router packet should be forwaded
+            //
+        } else if (this.ne.getType().equals("SWITCH")) {
+            //
+            // It its a switch we need to send it to the broadcast or destination interface
+            //
+        }
+
+        /**
+         * Encaminha o pacote :)
+         */
+        this.ne.forwardPacket(p);
     }
 
     public String getMacAddress() {
