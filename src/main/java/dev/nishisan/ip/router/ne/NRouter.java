@@ -26,9 +26,9 @@ import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 public class NRouter extends BaseNe<NRouterInterface> {
-    
+
     private final NRoutingTable mainRouteTable = new NRoutingTable("main", this);
-    
+
     public NRouter(String name) {
         super(name);
     }
@@ -64,7 +64,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
                 iFace, NRouteEntryScope.link);
         return iFace;
     }
-    
+
     public NRouterInterface addInterface(String name, String address, String description) {
         NRouterInterface iFace = new NRouterInterface(name, address, this);
         if (iFace.getLink() == null) {
@@ -75,25 +75,25 @@ public class NRouter extends BaseNe<NRouterInterface> {
         this.mainRouteTable.addRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
         return iFace;
     }
-    
+
     public NRoutingEntry addRouteEntry(String dst, String nextHop) {
         return this.addRouteEntry(dst, nextHop, null, null);
     }
-    
+
     public NRoutingEntry addRouteEntry(String dst, String nextHop, String src, NRouterInterface dev) {
         /**
          * Ao adicionar uma rota devemos saber se o nextHop é alcançável
          */
-        
+
         Optional<NRoutingEntry> n = this.mainRouteTable.getNextHop(nextHop);
-        
+
         if (n.isPresent()) {
             if (dev == null) {
                 if (n.get().getDev() != null) {
                     dev = n.get().getDev();
                 }
             }
-            
+
             if (src == null) {
                 if (n.get().getSrc() != null) {
                     src = n.get().getSrc().toString();
@@ -106,7 +106,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
         NRoutingEntry entry = new NRoutingEntry(dst, nextHop, src, dev);
         return this.mainRouteTable.addRouteEntry(entry);
     }
-    
+
     public void printRoutingTable() {
         this.mainRouteTable.printRoutingTable();
     }
@@ -126,22 +126,22 @@ public class NRouter extends BaseNe<NRouterInterface> {
             System.out.println("Next Hop Not Found...");
         }
     }
-    
+
     public Optional<NRoutingEntry> getNextHop(String target) {
         Optional<NRoutingEntry> r = this.mainRouteTable.getNextHop(target);
         return r;
     }
-    
+
     public Optional<NRoutingEntry> getNextHop(IPAddress target) {
         Optional<NRoutingEntry> r = this.mainRouteTable.getNextHop(target);
         return r;
     }
-    
+
     @Override
     public String getType() {
         return "ROUTER";
     }
-    
+
     @Override
     public void forwardPacket(NPacket p) {
         //
@@ -152,12 +152,12 @@ public class NRouter extends BaseNe<NRouterInterface> {
          * 1- Get TTL, check and decrement by 1
          */
         if (p.getTtl().get() > 0) {
-            
+
             System.out.println("[" + this.getName() + "] - Processing Packet:[" + p.getUuid() + "] From:[" + p.getSrc() + "] -> [" + p.getDst() + "] TTL:[" + p.getTtl().get() + "]");
-            
+
             p.getTtl().decrementAndGet();
             Optional<NRoutingEntry> routeEntry = this.getNextHop(p.getDst());
-            
+
             if (routeEntry.isPresent()) {
                 //
                 // We have a destination
@@ -177,7 +177,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
                         p.setConnected(true);
                         p.stopForwarding();
                     }
-                    
+
                 } else {
                     //
                     // Destination is other
@@ -192,23 +192,39 @@ public class NRouter extends BaseNe<NRouterInterface> {
                                 + "]");
                         System.out.println("------------------------------------------------------------------------------------------------------------------");
                         r.sendPacket(p);
-                        
+
                     }).orTimeout(p.getTimeout(), TimeUnit.SECONDS).exceptionally(ex -> {
                         // Tratamento em caso de timeout ou exceção
                         ex.printStackTrace();
                         System.out.println("Arp Timeout" + ex.getMessage());
                         return null;
                     }).join();
-                    
+
                 }
             } else {
                 System.out.println("Unreacheable...");
             }
-            
+
         } else {
             System.out.println("Packet Discarted");
         }
-        
+
     }
-    
+
+    @Override
+    public void printInterfaces() {
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("Device.........:[" + this.getName() + "]");
+        System.out.println("Interfaces.....:[" + this.getInterfaces().size() + "]");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        String header = String.format("%-15s %-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "IP", "MAC Address", "Description");
+        System.out.println(header);
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        this.getInterfaces().forEach((k, v) -> {
+            String row = String.format("%-15s %-15s %-15s %-15s %-18s %-30s", v.getName(), v.getAdminStatus(), v.getOperStatus(), v.getAddress().toNormalizedString(), v.getMacAddress(), v.getDescription());
+            System.out.println(row);
+        });
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+    }
+
 }

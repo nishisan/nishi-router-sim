@@ -41,6 +41,7 @@ public class SimplePacketForwardingExample {
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
         router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
 
+        
         /**
          * Router 1 - Default GW is router-2
          */
@@ -51,6 +52,8 @@ public class SimplePacketForwardingExample {
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
         router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
+        
+        
 
         /**
          * Add multiple route to see if routing metric working
@@ -67,8 +70,11 @@ public class SimplePacketForwardingExample {
         /**
          * Exibe a tabela de roteamento dos roteadores
          */
+        router1.printInterfaces();
         router1.printRoutingTable();
+        router2.printInterfaces();
         router2.printRoutingTable();
+        router3.printInterfaces();
         router3.printRoutingTable();
 
         /**
@@ -94,6 +100,7 @@ public class SimplePacketForwardingExample {
         vSwitch1.printInterfaces();
         vSwitch2.printInterfaces();
 
+        System.out.println("------------------------------------------------------------------------------------------------------------------");
         /**
          * Build an IP Packet, source is 200.1.1.1, destination is 172.30.2.1
          */
@@ -103,9 +110,8 @@ public class SimplePacketForwardingExample {
          * The packet must be inject on the router interface...
          */
         router1.getInterfaceByName("ge0/0/0/4").sendPacket(samplePacket);
-        
-        
-        System.out.println("Done.. " + samplePacket.forwardTimeInMs() );
+
+        System.out.println("Done.. " + samplePacket.forwardTimeInMs());
 
     }
 }

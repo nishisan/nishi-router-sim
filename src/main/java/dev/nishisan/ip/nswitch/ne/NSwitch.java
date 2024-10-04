@@ -41,7 +41,7 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
     public NSwitchInterface addInterface(String name, String description) {
         NSwitchInterface iFace = new NSwitchInterface(name, description, this);
         this.getInterfaces().put(name, iFace);
-        if (iFace.getLink()==null){
+        if (iFace.getLink() == null) {
             iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
         return iFace;
@@ -67,9 +67,23 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
 
     @Override
     public void forwardPacket(NPacket packet) {
-    
+
     }
 
-    
-    
+    @Override
+    public void printInterfaces() {
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("Device.........:[" + this.getName() + "]");
+        System.out.println("Interfaces.....:[" + this.getInterfaces().size() + "]");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        String header = String.format("%-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "MAC Address", "Description");
+        System.out.println(header);
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        this.getInterfaces().forEach((k, v) -> {
+            String row = String.format("%-15s %-15s %-15s %-18s %-30s", v.getName(), v.getAdminStatus(), v.getOperStatus(), v.getMacAddress(), v.getDescription());
+            System.out.println(row);
+        });
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+    }
+
 }

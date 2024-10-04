@@ -55,12 +55,12 @@ public class NRoutingTable {
     }
 
     public void printRoutingTable() {
-        System.out.println("------------------------------------------------------------------------------------");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
         System.out.println("Router.........:[" + this.router.getName() + "]");
         System.out.println("Routing Table..:[" + this.name + "]");
         System.out.println("Prefixes v4....:[" + this.entries.size() + "]");
 
-        System.out.println("------------------------------------------------------------------------------------");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
         AtomicLong idx = new AtomicLong(1L);
         this.entries.forEach((k, v) -> {
 
@@ -92,7 +92,7 @@ public class NRoutingTable {
             System.out.println(b.toString());
 
         });
-        System.out.println("------------------------------------------------------------------------------------");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
     }
 
     public String getName() {

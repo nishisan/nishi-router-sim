@@ -82,7 +82,7 @@ public class SimpleSwitchExample {
         router1.sendArpRequest("10.0.0.254").thenAccept(i -> {
         });
 
-//        vSwitch1.printInterfaces();
+        vSwitch1.printInterfaces();
 //        vSwitch2.printInterfaces();
 //        Optional<NRoutingEntry> route = router1.getNextHop("10.0.2.1");
 //

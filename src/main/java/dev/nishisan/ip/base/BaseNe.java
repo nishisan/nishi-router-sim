@@ -114,20 +114,7 @@ public abstract class BaseNe<T extends BaseInterface> {
      */
     public abstract String getType();
 
-    public void printInterfaces() {
-        System.out.println("------------------------------------------------------------------------------------");
-        System.out.println("Device.........:[" + this.getName() + "]");
-        System.out.println("Interfaces.....:[" + this.interfaces.size() + "]");
-        System.out.println("------------------------------------------------------------------------------------");
-        String header = String.format("%-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "MAC Address", "Description");
-        System.out.println(header);
-        System.out.println("------------------------------------------------------------------------------------");
-        this.interfaces.forEach((k, v) -> {
-            String row = String.format("%-15s %-15s %-15s %-18s %-30s", v.getName(), v.getAdminStatus(), v.getOperStatus(), v.getMacAddress(), v.getDescription());
-            System.out.println(row);
-        });
-        System.out.println("------------------------------------------------------------------------------------");
-    }
+    public abstract void printInterfaces();
 
    public abstract void forwardPacket(NPacket packet);
 
