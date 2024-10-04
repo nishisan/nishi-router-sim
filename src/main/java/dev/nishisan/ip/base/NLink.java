@@ -27,20 +27,38 @@ public class NLink {
     private BaseInterface src;
     private BaseInterface dst;
     private Integer vlanId = 0;
+    private Integer latency = 0;
+    private Integer jitter = 0;
 
     public NLink(BaseInterface src, BaseInterface dst) {
         this.src = src;
         this.dst = dst;
         this.src.setLink(this);
         this.dst.setLink(this);
-        
-        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)){
-            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)){
+
+        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
                 this.src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
                 this.dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
             }
         }
+
+    }
+
+    public NLink(BaseInterface src, BaseInterface dst, Integer latency, Integer jitter) {
+        this.src = src;
+        this.dst = dst;
         
+        this.src.setLink(this);
+        this.dst.setLink(this);
+
+        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                this.src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                this.dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+            }
+        }
+
     }
 
     public BaseInterface getSrc() {
@@ -73,6 +91,24 @@ public class NLink {
 
     public void setVlanId(Integer vlanId) {
         this.vlanId = vlanId;
+    }
+
+    public Integer getLatency() {
+        return latency;
+    }
+
+    public NLink setLatency(Integer latency) {
+        this.latency = latency;
+        return this;
+    }
+
+    public Integer getJitter() {
+        return jitter;
+    }
+
+    public NLink setJitter(Integer jitter) {
+        this.jitter = jitter;
+        return this;
     }
 
 }

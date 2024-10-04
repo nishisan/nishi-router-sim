@@ -33,6 +33,24 @@ public class NPacket {
     private String uuid = UUID.randomUUID().toString();
     private IPAddress src;
     private IPAddress dst;
+    private Integer timeout = 1;
+    private Boolean connected = false;
+    private Long startTimestamp = 0L;
+    private Long endTimestamp = 0L;
+
+    public void startForwarding() {
+        if (this.startTimestamp == 0L) {
+            this.startTimestamp = System.currentTimeMillis();
+        }
+    }
+
+    public void stopForwarding() {
+        this.endTimestamp = System.currentTimeMillis();
+    }
+
+    public Long forwardTimeInMs() {
+        return this.endTimestamp - this.startTimestamp;
+    }
 
     public AtomicInteger getTtl() {
         return ttl;
@@ -76,4 +94,21 @@ public class NPacket {
         packet.setDst(NRoutingEntry.getIpAddress(dst));
         return packet;
     }
+
+    public Integer getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(Integer timeout) {
+        this.timeout = timeout;
+    }
+
+    public Boolean getConnected() {
+        return connected;
+    }
+
+    public void setConnected(Boolean connected) {
+        this.connected = connected;
+    }
+
 }

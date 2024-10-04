@@ -64,8 +64,28 @@ public class BaseInterface {
             if (this.operStatus.equals(NIfaceOperStatus.OPER_UP)) {
                 if (this.link != null) {
                     if (!m.walked(this)) {
-
                         m.notifyWalk(this);
+
+                        if (this.link != null) {
+                            if (this.link.getLatency() > 0) {
+                                try {
+                                    //
+                                    // Mimics Latency
+                                    //
+
+                                    Random r = new Random();
+                                    Thread.sleep(this.link.getLatency());
+
+                                    //
+                                    // Jitter
+                                    //
+                                    if (this.link.getJitter() > 0) {
+                                        Thread.sleep(r.nextInt(this.link.getJitter()));
+                                    }
+                                } catch (InterruptedException ex) {
+                                }
+                            }
+                        }
                         //
                         // Verifica se temos link na interface
                         //
@@ -89,8 +109,7 @@ public class BaseInterface {
                             }
                         }
 
-                        System.out.println(msg.toString());
-
+//                        System.out.println(msg.toString());
                     }
                 }
             }
@@ -121,7 +140,8 @@ public class BaseInterface {
         this.name = name;
     }
 
-    public void packetReceive(NPacket p) {
+    public void sendPacket(NPacket p) {
+        p.startForwarding();
         if (this.ne.getType().equals("ROUTER")) {
             //
             // If its a router packet should be forwaded

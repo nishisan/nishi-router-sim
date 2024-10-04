@@ -20,15 +20,13 @@ package dev.nishisan.ip.router.examples;
 import dev.nishisan.ip.base.NPacket;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 03.10.2024
  */
-public class SimplePacketForwardingExample {
+public class SimplePacketForwardingLoopExample {
 
     public static void main(String[] args) {
 
@@ -53,23 +51,15 @@ public class SimplePacketForwardingExample {
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
 
         /**
-         * Add multiple route to see if routing metric working
+         * Router 2 Default Gw is router-1
          */
-        router2.addRouteEntry("172.30.0.0/16", "10.0.0.2").setMetric(10);
-        router2.addRouteEntry("172.30.0.0/16", "10.0.0.1").setMetric(100);
-
-        NRouter router3 = new NRouter("router-3");
-        router3.addInterface("ge0/0/0/1", "10.0.0.2/24", "LT:switch-2 eth-2");
-        router3.addInterface("ge0/0/0/2", "172.30.0.1/24");
-        router3.addInterface("ge0/0/0/3", "172.30.1.1/24");
-        router3.addInterface("ge0/0/0/4", "172.30.2.1/24");
+        router2.addRouteEntry("0.0.0.0", "10.0.0.1");
 
         /**
          * Exibe a tabela de roteamento dos roteadores
          */
         router1.printRoutingTable();
         router2.printRoutingTable();
-        router3.printRoutingTable();
 
         /**
          * Cria 2 switches, e conecta um router em cada switch, e uma interface
@@ -82,30 +72,23 @@ public class SimplePacketForwardingExample {
 
         NSwitch vSwitch2 = new NSwitch("switch-2");
         vSwitch2.addInterface("eth-1", "LT:router-2");
-        vSwitch2.addInterface("eth-2", "LT:router-3");
+        vSwitch2.addInterface("eth-2", "");
         vSwitch2.addInterface("eth-3", "LT:switch-1");
 
-        vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));//.setLatency(20).setJitter(5);
-        vSwitch2.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch2.getInterfaceByName("eth-1"));//.setLatency(20).setJitter(5);
-        vSwitch2.connect(router3.getInterfaceByName("ge0/0/0/1"), vSwitch2.getInterfaceByName("eth-2"));//.setLatency(20).setJitter(5);
+        vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));
+
+        vSwitch2.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch2.getInterfaceByName("eth-1"));
 
         vSwitch1.connect(vSwitch1.getInterfaceByName("eth-3"), vSwitch2.getInterfaceByName("eth-3"));
 
-        vSwitch1.printInterfaces();
-        vSwitch2.printInterfaces();
+        NPacket samplePacket = NPacket.build("200.1.1.1", "8.8.8.8");
 
         /**
-         * Build an IP Packet, source is 200.1.1.1, destination is 172.30.2.1
-         */
-        NPacket samplePacket = NPacket.build("200.1.1.1", "172.30.2.1");
-
-        /**
-         * The packet must be inject on the router interface...
+         * Injects a packet on the router interface directly In this topology
+         * will generate a Loop Cause router1 gw is router2 and router2 gw is
+         * router1
          */
         router1.getInterfaceByName("ge0/0/0/4").sendPacket(samplePacket);
-        
-        
-        System.out.println("Done.. " + samplePacket.forwardTimeInMs() );
 
     }
 }

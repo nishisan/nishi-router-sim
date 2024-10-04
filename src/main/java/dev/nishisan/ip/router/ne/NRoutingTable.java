@@ -136,16 +136,19 @@ public class NRoutingTable {
             NRoutingEntry r = entries.entrySet().parallelStream()
                     .filter(entry -> entry.getValue().getDst().contains(destinationAddress))
                     .max(Comparator.<Map.Entry<String, NRoutingEntry>>comparingInt(entry -> {
-                        // Priorizar rotas mais específicas com base no comprimento do prefixo
                         return entry.getValue().getDst().getPrefixLength();
                     }).thenComparingInt(entry -> {
-                        // Em caso de prefixos iguais, preferir a rota com menor métrica
                         return entry.getValue().getMetric() * -1;
                     }))
                     .map(Map.Entry::getValue)
                     .orElse(null);
-            
+
             return Optional.ofNullable(r);
+        } catch (Exception ex) {
+            //
+            // Em caso de ex, retorna null
+            //
+            return Optional.ofNullable(null);
         } finally {
             Long e = System.currentTimeMillis();
             Long t = e - s;

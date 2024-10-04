@@ -55,7 +55,7 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
 
     public NLink connect(BaseInterface src, BaseInterface dst) {
         NLink link = new NLink(src, dst);
-        System.out.println("Connection from:[" + src.getNe().getType() + "] to: [" + dst.getNe().getType() + "] Created!");
+//        System.out.println("Connection from:[" + src.getNe().getType() + "] to: [" + dst.getNe().getType() + "] Created!");
         this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
         return link;
     }
