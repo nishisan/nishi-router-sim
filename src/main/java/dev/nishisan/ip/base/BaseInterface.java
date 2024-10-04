@@ -141,6 +141,10 @@ public class BaseInterface {
     }
 
     public void sendPacket(NPacket p) {
+        /**
+         * @todo, check if source address is direct connected to the
+         * interface...
+         */
         p.startForwarding();
         if (this.ne.getType().equals("ROUTER")) {
             //

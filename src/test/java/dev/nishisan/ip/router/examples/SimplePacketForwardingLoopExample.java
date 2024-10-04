@@ -81,7 +81,7 @@ public class SimplePacketForwardingLoopExample {
 
         vSwitch1.connect(vSwitch1.getInterfaceByName("eth-3"), vSwitch2.getInterfaceByName("eth-3"));
 
-        NPacket samplePacket = NPacket.build("200.1.1.1", "8.8.8.8");
+        NPacket samplePacket = NPacket.buildRequest("200.1.1.1", "8.8.8.8");
 
         /**
          * Injects a packet on the router interface directly In this topology

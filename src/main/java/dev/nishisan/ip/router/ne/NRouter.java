@@ -153,7 +153,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
          */
         if (p.getTtl().get() > 0) {
 
-            System.out.println("[" + this.getName() + "] - Processing Packet:[" + p.getUuid() + "] From:[" + p.getSrc() + "] -> [" + p.getDst() + "] TTL:[" + p.getTtl().get() + "]");
+            System.out.println("[" + this.getName() + "] - Processing Packet:[" + p.getUuid() + "] Type:[" + p.getType() + "] From:[" + p.getSrc() + "] -> [" + p.getDst() + "] TTL:[" + p.getTtl().get() + "]");
 
             p.getTtl().decrementAndGet();
             Optional<NRoutingEntry> routeEntry = this.getNextHop(p.getDst());
@@ -176,6 +176,21 @@ public class NRouter extends BaseNe<NRouterInterface> {
                         //
                         p.setConnected(true);
                         p.stopForwarding();
+
+                       
+                        //
+                        //Raise Back round
+                        //
+                        if (p.getType().equals(NPacket.NPacketType.REQUEST)) {
+                            //
+                            // Answer only for reply
+                            //
+                            routeEntry.get().getDev().sendPacket(p.createReply());
+                        }else{
+                            if (p.getSource()!=null){
+                                p.getSource().reply();
+                            }
+                        }
                     }
 
                 } else {

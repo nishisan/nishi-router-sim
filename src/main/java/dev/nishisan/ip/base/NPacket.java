@@ -20,7 +20,10 @@ package dev.nishisan.ip.base;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /**
  *
@@ -37,6 +40,32 @@ public class NPacket {
     private Boolean connected = false;
     private Long startTimestamp = 0L;
     private Long endTimestamp = 0L;
+    private Integer originalTtl = 64;
+    private NPacketType type = NPacketType.REQUEST;
+    private NPacket source;
+    private CompletableFuture<NPacket> replyFuture = new CompletableFuture<>();
+
+    public enum NPacketType {
+        REQUEST,
+        REPLY
+    }
+
+    public void reply(NPacket replyPacket) {
+        replyFuture.complete(replyPacket);
+    }
+
+    public void reply() {
+        replyFuture.complete(this.source);
+    }
+
+    public void onReply(int timeoutInSeconds, Consumer<NPacket> replyHandler) {
+        replyFuture.orTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+                .thenAccept(replyHandler)
+                .exceptionally(ex -> {
+                    System.out.println("Timeout ou erro: " + ex.getMessage());
+                    return null;
+                });
+    }
 
     public void startForwarding() {
         if (this.startTimestamp == 0L) {
@@ -80,18 +109,21 @@ public class NPacket {
         return uuid;
     }
 
-    public static NPacket build(String src, String dst, Integer ttl) {
+    public static NPacket buildRequest(String src, String dst, Integer ttl) {
         NPacket packet = new NPacket();
         packet.setSrc(NRoutingEntry.getIpAddress(src));
         packet.setDst(NRoutingEntry.getIpAddress(dst));
         packet.getTtl().set(ttl);
+        packet.setOriginalTtl(ttl);
+        packet.setType(NPacketType.REQUEST);
         return packet;
     }
 
-    public static NPacket build(String src, String dst) {
+    public static NPacket buildRequest(String src, String dst) {
         NPacket packet = new NPacket();
         packet.setSrc(NRoutingEntry.getIpAddress(src));
         packet.setDst(NRoutingEntry.getIpAddress(dst));
+        packet.setType(NPacketType.REQUEST);
         return packet;
     }
 
@@ -108,7 +140,42 @@ public class NPacket {
     }
 
     public void setConnected(Boolean connected) {
+        /**
+         * True when packet arrives on destionation but is confunsing...
+         * Connections is stablished when round trips is valid... so this is not
+         * real connected.. Must check in future
+         */
         this.connected = connected;
+    }
+
+    public NPacket createReply() {
+        NPacket n = new NPacket();
+        n.src = this.dst;
+        n.dst = this.src;
+        n.ttl.set(this.originalTtl);
+        n.setType(NPacketType.REPLY);
+        n.source = this;
+        return n;
+    }
+
+    public Integer getOriginalTtl() {
+        return originalTtl;
+    }
+
+    public void setOriginalTtl(Integer originalTtl) {
+        this.originalTtl = originalTtl;
+    }
+
+    public NPacketType getType() {
+        return type;
+    }
+
+    public void setType(NPacketType type) {
+        this.type = type;
+    }
+
+    public NPacket getSource() {
+        return source;
     }
 
 }

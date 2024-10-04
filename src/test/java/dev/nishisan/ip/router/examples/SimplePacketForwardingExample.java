@@ -41,7 +41,6 @@ public class SimplePacketForwardingExample {
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
         router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
 
-        
         /**
          * Router 1 - Default GW is router-2
          */
@@ -52,8 +51,6 @@ public class SimplePacketForwardingExample {
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
         router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
-        
-        
 
         /**
          * Add multiple route to see if routing metric working
@@ -61,12 +58,15 @@ public class SimplePacketForwardingExample {
         router2.addRouteEntry("172.30.0.0/16", "10.0.0.2").setMetric(10);
         router2.addRouteEntry("172.30.0.0/16", "10.0.0.1").setMetric(100);
 
+        router2.addRouteEntry("192.168.3.0/24", "10.0.0.1").setMetric(100);
+
         NRouter router3 = new NRouter("router-3");
         router3.addInterface("ge0/0/0/1", "10.0.0.2/24", "LT:switch-2 eth-2");
         router3.addInterface("ge0/0/0/2", "172.30.0.1/24");
         router3.addInterface("ge0/0/0/3", "172.30.1.1/24");
         router3.addInterface("ge0/0/0/4", "172.30.2.1/24");
 
+        router3.addRouteEntry("0.0.0.0", "10.0.0.254");
         /**
          * Exibe a tabela de roteamento dos roteadores
          */
@@ -104,14 +104,24 @@ public class SimplePacketForwardingExample {
         /**
          * Build an IP Packet, source is 200.1.1.1, destination is 172.30.2.1
          */
-        NPacket samplePacket = NPacket.build("200.1.1.1", "172.30.2.1");
+        NPacket samplePacket = NPacket.buildRequest("192.168.3.1", "172.30.2.1");
+
+        /**
+         * This is the call back that will be called after the send
+         */
+        samplePacket.onReply(5, (r) -> {
+            System.out.println("::: Reply Received");
+        });
 
         /**
          * The packet must be inject on the router interface...
          */
         router1.getInterfaceByName("ge0/0/0/4").sendPacket(samplePacket);
 
-        System.out.println("Done.. " + samplePacket.forwardTimeInMs());
-
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimplePacketForwardingExample.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
