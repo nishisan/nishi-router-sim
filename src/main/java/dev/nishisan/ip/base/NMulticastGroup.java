@@ -17,8 +17,13 @@
  */
 package dev.nishisan.ip.base;
 
+import dev.nishisan.ip.packet.BroadCastPacket;
+import dev.nishisan.ip.packet.MultiCastPacket;
+import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
-import java.util.List;
+import io.reactivex.rxjava3.subjects.PublishSubject;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -27,8 +32,24 @@ import java.util.List;
 public class NMulticastGroup {
 
     private IPAddress mcastGroup; // 239.1.1.1
+    private final PublishSubject<MultiCastPacket> eventBus = PublishSubject.create();
 
-    private List<NBaseInterface> subscribers;
+    public void sendMulticasPacket(MultiCastPacket packet) {
+        this.eventBus.onNext(packet);
+    }
+
+    public NMulticastGroup(IPAddress mcastGroup) {
+        this.mcastGroup = mcastGroup;
+    }
+
+    public NMulticastGroup(String ipAddress) {
+        this.mcastGroup = NRoutingEntry.getIpAddress(ipAddress);
+    }
+
+    /**
+     * List of subscribers in the group
+     */
+    private Map<String, NBaseInterface> subscribers = new ConcurrentHashMap<>();
 
     public IPAddress getMcastGroup() {
         return mcastGroup;
@@ -38,12 +59,18 @@ public class NMulticastGroup {
         this.mcastGroup = mcastGroup;
     }
 
-    public List<NBaseInterface> getSubscribers() {
+    public Map<String, NBaseInterface> getSubscribers() {
         return subscribers;
     }
 
-    public void setSubscribers(List<NBaseInterface> subscribers) {
+    public void setSubscribers(Map<String, NBaseInterface> subscribers) {
         this.subscribers = subscribers;
+    }
+
+    public void addSubscriberInterface(NBaseInterface iFace) {
+        if (!this.subscribers.containsKey(iFace.getUid())) {
+            this.subscribers.put(iFace.getUid(), iFace);
+        }
     }
 
 }

@@ -29,7 +29,7 @@ import java.util.function.Consumer;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 02.10.2024
  */
-public class OnWireMsg<T extends OnWireMsg<T>> implements Serializable {
+public class BroadCastPacket<T extends BroadCastPacket<T>> implements Serializable {
 
     private String uid = UUID.randomUUID().toString();
 

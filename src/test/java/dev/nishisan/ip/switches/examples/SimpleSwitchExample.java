@@ -15,7 +15,7 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.router.examples;
+package dev.nishisan.ip.switches.examples;
 
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;

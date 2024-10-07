@@ -19,9 +19,9 @@ package dev.nishisan.ip.nswitch.ne;
 
 import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.base.BaseNe;
+import dev.nishisan.ip.base.NBroadCastDomain;
 import dev.nishisan.ip.base.NLink;
 import dev.nishisan.ip.packet.NPacket;
-import dev.nishisan.ip.packet.processor.ArpPacketProcessor;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -40,22 +40,30 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
     }
 
     public NSwitchInterface addInterface(String name, String description) {
-        NSwitchInterface iFace = new NSwitchInterface(name, description, this);
+        NSwitchInterface iFace = new NSwitchInterface(name, description, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         if (iFace.getLink() == null) {
             iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
+        } else {
+            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
         }
         return iFace;
     }
 
     public NSwitchInterface addInterface(String name) {
-        NSwitchInterface iFace = new NSwitchInterface(name, this);
+        NSwitchInterface iFace = new NSwitchInterface(name, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         return iFace;
     }
 
     public NLink connect(NBaseInterface src, NBaseInterface dst) {
         NLink link = new NLink(src, dst);
+        if (src.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (dst.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                src.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+                dst.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+            }
+        }
         this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
         return link;
     }
@@ -88,7 +96,12 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
 
     @Override
     public void registerProcessors() {
-//        this.addProcessor(new ArpPacketProcessor());
+
+    }
+
+    @Override
+    public void tick() {
+
     }
 
 }

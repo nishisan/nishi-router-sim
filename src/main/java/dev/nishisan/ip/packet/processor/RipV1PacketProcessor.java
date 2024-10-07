@@ -18,19 +18,19 @@
 package dev.nishisan.ip.packet.processor;
 
 import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.NRipV1Announce;
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.RipV1AnnouncePacket;
+import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.router.ne.NRouter;
 
 /**
  *
  * @author lucas
  */
-public class RipV1PacketProcessor extends AbsPacketProcessor<NRipV1Announce> {
+public class RipV1PacketProcessor extends AbsPacketProcessor<RipV1AnnouncePacket> {
     
     @Override
-    public void processPacket(OnWireMsg m, NBaseInterface iFace) {
-        if (m instanceof NRipV1Announce ripAnnouce) {
+    public void processPacket(BroadCastPacket m, NBaseInterface iFace) {
+        if (m instanceof RipV1AnnouncePacket ripAnnouce) {
             //
             // Responde ele mesmo para testar..
             //

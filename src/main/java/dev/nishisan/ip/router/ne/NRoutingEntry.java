@@ -20,6 +20,7 @@ package dev.nishisan.ip.router.ne;
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class NRoutingEntry {
 
@@ -32,6 +33,7 @@ public class NRoutingEntry {
     private Integer metric = 0;
     private Integer adminDistance = 0;
     private Integer distance = 0;
+    private Long upSince = 0L;
 
     private NRouteEntryScope scope;
 
@@ -83,6 +85,7 @@ public class NRoutingEntry {
         }
         this.type = type;
         this.dev = dev;
+        this.upSince = System.currentTimeMillis();
     }
 
     public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteType type) {
@@ -94,6 +97,7 @@ public class NRoutingEntry {
         this.src = src;
         this.dev = dev;
         this.type = type;
+        this.upSince = System.currentTimeMillis();
     }
 
     public NRoutingEntry(IPAddress dst, IPAddress nextHop, IPAddress src, NRouterInterface dev, NRouteEntryScope scope, NRouteType type) {
@@ -106,6 +110,7 @@ public class NRoutingEntry {
         this.dev = dev;
         this.scope = scope;
         this.type = type;
+        this.upSince = System.currentTimeMillis();
     }
 
     public IPAddress getDst() {
@@ -223,4 +228,45 @@ public class NRoutingEntry {
         this.adminDistance = adminDistance;
     }
 
+    public Integer getDistance() {
+        return distance;
+    }
+
+    public void setDistance(Integer distance) {
+        this.distance = distance;
+    }
+
+    public NRouteType getType() {
+        return type;
+    }
+
+    public void setType(NRouteType type) {
+        this.type = type;
+    }
+
+    public Long getUpSince() {
+        return upSince;
+    }
+
+    public void setUpSince(Long upSince) {
+        this.upSince = upSince;
+    }
+
+    // Método para formatar o tempo de uptime em d00h00m
+    public String formatUptime(long millis) {
+        long days = TimeUnit.MILLISECONDS.toDays(millis);
+        millis -= TimeUnit.DAYS.toMillis(days);
+        long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        millis -= TimeUnit.HOURS.toMillis(hours);
+        long minutes = TimeUnit.MILLISECONDS.toMinutes(millis);
+        millis -= TimeUnit.HOURS.toMillis(minutes);
+        long seconds = TimeUnit.MILLISECONDS.toSeconds(millis);
+
+        return String.format("%dd%02dh%02dm%02ds", days, hours, minutes, seconds);
+    }
+
+    public String getStringUptime() {
+        long uptimeMillis = System.currentTimeMillis() - this.getUpSince();
+        return this.formatUptime(uptimeMillis);
+    }
 }

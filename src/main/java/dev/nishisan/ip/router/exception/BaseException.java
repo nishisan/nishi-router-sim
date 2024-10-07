@@ -15,18 +15,13 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.packet.processor;
-
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.BroadCastPacket;
+package dev.nishisan.ip.router.exception;
 
 /**
  *
  * @author lucas
  */
-public interface IPacketProcessor<T extends BroadCastPacket<T>> {
+public class BaseException extends Exception implements IRouterException {
 
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace);
 
-    public String getUuid();
 }

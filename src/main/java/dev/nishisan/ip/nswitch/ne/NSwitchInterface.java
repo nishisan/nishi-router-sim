@@ -18,6 +18,7 @@
 package dev.nishisan.ip.nswitch.ne;
 
 import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.NBroadCastDomain;
 
 /**
  *
@@ -28,13 +29,13 @@ public class NSwitchInterface extends NBaseInterface {
 
     private NSwitch nSwitch;
 
-    public NSwitchInterface(String name, NSwitch nSwitch) {
-        super(name,nSwitch);
+    public NSwitchInterface(String name, NSwitch nSwitch, NBroadCastDomain broadcastDomain) {
+        super(name, nSwitch, broadcastDomain);
         this.nSwitch = nSwitch;
     }
 
-    public NSwitchInterface(String name, String description, NSwitch nSwitch) {
-        super(name,nSwitch);
+    public NSwitchInterface(String name, String description, NSwitch nSwitch,NBroadCastDomain broadcastDomain) {
+        super(name, nSwitch,broadcastDomain);
         this.setDescription(description);
         this.nSwitch = nSwitch;
 

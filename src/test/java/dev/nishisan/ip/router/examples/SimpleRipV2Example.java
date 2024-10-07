@@ -19,35 +19,61 @@ package dev.nishisan.ip.router.examples;
 
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
-import dev.nishisan.ip.router.ne.NRouterInterface;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import dev.nishisan.ip.router.protocols.configuration.RipV2ProtocolConfiguration;
 
 /**
  *
  * @author lucas
  */
-public class SimpleRipV1Example {
+public class SimpleRipV2Example {
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         NRouter router1 = new NRouter("router-1");
-        NRouterInterface s = router1.addInterface("ge0/0/0/1", "192.168.0.1/24", "UPLINK");
+        router1.addInterface("ge0/0/0/1", "192.168.0.1/24", "UPLINK");
         router1.addInterface("ge0/0/0/2", "192.168.1.1/24");
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
         router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
+        router1.addInterface("ge0/0/0/5", "192.168.4.1/24");
+
+        RipV2ProtocolConfiguration router1RipV2Configuration = new RipV2ProtocolConfiguration();
+        /**
+         * Enabled Ripv2
+         */
+        router1RipV2Configuration.setEnabled(true);
+        /**
+         * Add All Networks
+         */
+        router1RipV2Configuration.addNetworks(router1.getRoutes());
+
+        /**
+         * Add the configuration Protocol to the router
+         */
+        router1.getRouterConfiguration().addRouterProtocolConfiguration(router1RipV2Configuration);
 
         NRouter router2 = new NRouter("router-2");
-        router2.addInterface("ge0/0/0/1", "192.168.0.2/24", "LT:switch-1 eth-2");
+        router2.addInterface("ge0/0/0/1", "192.168.0.2/24", "UPLINK");
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
         router2.addInterface("ge0/0/0/3", "10.0.3.1/24");
         router2.addInterface("ge0/0/0/4", "10.0.4.1/24");
 
-        NRouter router3 = new NRouter("router-3");
-        router3.addInterface("ge0/0/0/1", "192.168.0.3/24", "LT:switch-1 eth-3");
-        router3.addInterface("ge0/0/0/2", "172.30.1.1/24");
-        router3.addInterface("ge0/0/0/3", "172.30.2.1/24");
-        router3.addInterface("ge0/0/0/4", "172.30.3.1/24");
+        RipV2ProtocolConfiguration router2RipV2Configuration = new RipV2ProtocolConfiguration();
+        /**
+         * Enabled Ripv2
+         */
+        router2RipV2Configuration.setEnabled(true);
+        /**
+         * Add All Networks
+         */
+        router2RipV2Configuration.addNetworks(router2.getRoutes());
 
+        /**
+         * Add the configuration Protocol to the router
+         */
+        router2.getRouterConfiguration().addRouterProtocolConfiguration(router2RipV2Configuration);
+
+        /**
+         * Add new Switch
+         */
         NSwitch vSwitch1 = new NSwitch("switch-1");
         vSwitch1.addInterface("eth-1", "LT:router-1");
         vSwitch1.addInterface("eth-2", "LT:router-2");
@@ -56,26 +82,19 @@ public class SimpleRipV1Example {
 
         vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));
         vSwitch1.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-2"));
-        vSwitch1.connect(router3.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-3"));
-
-        vSwitch1.printInterfaces();
 
         /**
-         * Send Announce on all interfaces on default Vlan
+         * Start router-1
          */
-        router1.sendRipV1Annouce(s).thenAccept(r -> {
-            System.out.println("Rip Sent");
-        });
+        router1.start();
 
-        try {
-            Thread.sleep(5 * 1000);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(SimpleRipV1Example.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        /**
+         * Start router-2
+         */
+        router2.start();
 
-        router1.printRoutingTable();
-        router2.printRoutingTable();
-
-        router3.printRoutingTable();
+        Thread.sleep(5 * 1000);
+        router1.shutDown();
+        System.out.println("Done");
     }
 }

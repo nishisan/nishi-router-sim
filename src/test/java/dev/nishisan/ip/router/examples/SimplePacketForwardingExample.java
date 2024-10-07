@@ -17,9 +17,11 @@
  */
 package dev.nishisan.ip.router.examples;
 
+import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.packet.NPacket;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
+import dev.nishisan.ip.router.ne.NRouterInterface;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +41,7 @@ public class SimplePacketForwardingExample {
         router1.addInterface("ge0/0/0/1", "10.0.0.1/24", "LT:switch-1 eth-1");
         router1.addInterface("ge0/0/0/2", "192.168.1.1/24");
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
-        router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
+        router1.addInterface("ge0/0/0/4", "192.168.3.1/24").setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
 
         /**
          * Router 1 - Default GW is router-2
@@ -64,7 +66,7 @@ public class SimplePacketForwardingExample {
         router3.addInterface("ge0/0/0/1", "10.0.0.2/24", "LT:switch-2 eth-2");
         router3.addInterface("ge0/0/0/2", "172.30.0.1/24");
         router3.addInterface("ge0/0/0/3", "172.30.1.1/24");
-        router3.addInterface("ge0/0/0/4", "172.30.2.1/24");
+        router3.addInterface("ge0/0/0/4", "172.30.2.1/24").setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
 
         router3.addStaticRouteEntry("0.0.0.0", "10.0.0.254");
         /**

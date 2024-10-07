@@ -18,7 +18,7 @@
 package dev.nishisan.ip.base;
 
 import dev.nishisan.ip.packet.NPacket;
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.BroadCastPacket;
 import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Objects;
@@ -40,8 +40,10 @@ public class NBaseInterface {
     private NIfaceAdminStatus adminStatus = NIfaceAdminStatus.ADMIN_UP;
     private final BaseNe ne;
     private NLink link;
-    private final PublishSubject<OnWireMsg> eventBus;
+    private final PublishSubject<BroadCastPacket> eventBus;
     private String uid = UUID.randomUUID().toString();
+    private BaseIfType ifType = BaseIfType.ETHERNET_CSMACD;
+    private final NBroadCastDomain broadCastDomain;
 
     public enum NIfaceOperStatus {
         OPER_UP,
@@ -53,13 +55,14 @@ public class NBaseInterface {
         ADMIN_DOWN
     }
 
-    public NBaseInterface(String name, BaseNe ne) {
+    public NBaseInterface(String name, BaseNe ne, NBroadCastDomain broadCastDomain) {
         this.name = name;
         this.eventBus = ne.getEventBus();
         this.macAddress = NBaseInterface.generateMacAddress();
         this.ne = ne;
+        this.broadCastDomain = broadCastDomain;
         /**
-         *
+         * This is the Default Broadcast Domain
          */
         this.eventBus.subscribe(m -> {
             /**
@@ -112,7 +115,7 @@ public class NBaseInterface {
                         //
                         // Como tem Link, esse método propaga para o proximo
                         //
-                        o.getNe().sendOnWireMsg(m);
+                        o.getNe().sendBroadCastMessage(m);
 
                     }
                 }
@@ -186,8 +189,9 @@ public class NBaseInterface {
         return operStatus;
     }
 
-    public void setOperStatus(NIfaceOperStatus operStatus) {
+    public NBaseInterface setOperStatus(NIfaceOperStatus operStatus) {
         this.operStatus = operStatus;
+        return this;
     }
 
     public NIfaceAdminStatus getAdminStatus() {
@@ -247,7 +251,64 @@ public class NBaseInterface {
     public BaseNe getNe() {
         return ne;
     }
-    
-    
 
+    public NMulticastGroup joinMcastGroup(String mcastGroupAddress) {
+        /**
+         * it will look for the mcast group in the current broadcast domain
+         */
+        return this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
+    }
+
+    public NMulticastGroup joinMcastGroup(NMulticastGroup mcastGroupAddress) {
+        /**
+         * it will look for the mcast group in the current broadcast domain
+         */
+        return this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
+    }
+
+    public NBroadCastDomain getBroadCastDomain() {
+        return broadCastDomain;
+    }
+
+    public BaseIfType getIfType() {
+        return ifType;
+    }
+
+    public void setIfType(BaseIfType ifType) {
+        this.ifType = ifType;
+    }
+
+    public enum BaseIfType {
+        ETHERNET_CSMACD(6, "Ethernet (IEEE 802.3)"),
+        FAST_ETHERNET(62, "Fast Ethernet (100 Mbps)"),
+        GIGABIT_ETHERNET(117, "Gigabit Ethernet (1000 Mbps)"),
+        FRAME_RELAY(32, "Frame Relay"),
+        ATM(37, "Asynchronous Transfer Mode (ATM)"),
+        PPP(23, "Point-to-Point Protocol (PPP)"),
+        HDLC(118, "High-Level Data Link Control (HDLC)"),
+        SOFTWARE_LOOPBACK(24, "Software Loopback");
+
+        private final int code;
+        private final String description;
+
+        BaseIfType(int code,
+                String description
+        ) {
+            this.code = code;
+            this.description = description;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        @Override
+        public String toString() {
+            return name() + " (" + code + "): " + description;
+        }
+    }
 }

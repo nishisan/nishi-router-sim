@@ -17,24 +17,38 @@
  */
 package dev.nishisan.ip.router.ne;
 
+import dev.nishisan.ip.router.ne.configuration.NRouterConfig;
 import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.base.BaseNe;
+import dev.nishisan.ip.base.NMulticastGroup;
+import dev.nishisan.ip.packet.MultiCastPacket;
 import dev.nishisan.ip.packet.NPacket;
-import dev.nishisan.ip.packet.NRipV1Announce;
+import dev.nishisan.ip.packet.RipV1AnnouncePacket;
+import dev.nishisan.ip.packet.RipV2AnnoucePacket;
+import dev.nishisan.ip.packet.payload.RipV2Payload;
 import dev.nishisan.ip.packet.processor.ArpPacketProcessor;
 import dev.nishisan.ip.packet.processor.RipV1PacketProcessor;
+import dev.nishisan.ip.router.exception.InvalidConfigurationCastException;
 import dev.nishisan.ip.router.ne.NRoutingEntry.NRouteEntryScope;
+import dev.nishisan.ip.router.protocols.configuration.IRoutingProtocolConfiguration;
+import dev.nishisan.ip.router.protocols.configuration.RipV2ProtocolConfiguration;
 import inet.ipaddr.IPAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NRouter extends BaseNe<NRouterInterface> {
 
     private final NRoutingTable mainRouteTable = new NRoutingTable("main", this);
+    private final NRouterConfig routerConfiguration = new NRouterConfig();
 
     public NRouter(String name) {
         super(name);
+        this.routerConfiguration.setSysName(name);
     }
 
     /**
@@ -44,7 +58,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
      * @return
      */
     public NRouterInterface addInterface(String name) {
-        NRouterInterface iFace = new NRouterInterface(name, this);
+        NRouterInterface iFace = new NRouterInterface(name, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         return iFace;
     }
@@ -57,7 +71,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
      * @return
      */
     public NRouterInterface addInterface(String name, String address) {
-        NRouterInterface iFace = new NRouterInterface(name, address, this);
+        NRouterInterface iFace = new NRouterInterface(name, address, this, this.getDefaultBroadcastDomain());
         if (iFace.getLink() == null) {
             iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
@@ -70,7 +84,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
     }
 
     public NRouterInterface addInterface(String name, String address, String description) {
-        NRouterInterface iFace = new NRouterInterface(name, address, this);
+        NRouterInterface iFace = new NRouterInterface(name, address, this, this.getDefaultBroadcastDomain());
         if (iFace.getLink() == null) {
             iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
         }
@@ -280,16 +294,81 @@ public class NRouter extends BaseNe<NRouterInterface> {
      *
      * @return
      */
-    public CompletableFuture<NRipV1Announce> sendRipAnnouce(NRouterInterface i) {
-        NRipV1Announce r = new NRipV1Announce();
+    public CompletableFuture<RipV1AnnouncePacket> sendRipV1Annouce(NRouterInterface i) {
+        RipV1AnnouncePacket r = new RipV1AnnouncePacket();
         r.setSource(i.getAddress());
         r.getNetworks().addAll(this.mainRouteTable.getEntries().values());
-        CompletableFuture<NRipV1Announce> future = new CompletableFuture<>();
+        CompletableFuture<RipV1AnnouncePacket> future = new CompletableFuture<>();
         r.onReply(o -> {
             future.complete(o);
         });
-        this.sendOnWireMsg(r);
+        this.sendBroadCastMessage(r);
         return future;
     }
 
+    @Override
+    public void tick() {
+        this.processRoutingProtocols();
+    }
+
+    public NRouterConfig getRouterConfiguration() {
+        return routerConfiguration;
+    }
+
+    public List<NRoutingEntry> getRoutes() {
+        return new ArrayList<>(this.mainRouteTable.getEntries().values());
+    }
+
+    /**
+     * Process routing protocols Logic
+     */
+    private void processRoutingProtocols() {
+        if (this.routerConfiguration.getRouterProtocolsConfiguration().containsKey(RipV2ProtocolConfiguration.type)) {
+            this.processRipV2RoutingProcotol();
+        }
+
+    }
+
+    private void processRipV2RoutingProcotol() {
+        IRoutingProtocolConfiguration protocol = this.routerConfiguration.getRouterProtocolsConfiguration().get(RipV2ProtocolConfiguration.type);
+        try {
+            RipV2ProtocolConfiguration ripv2Configuration = protocol.getRipV2Configuration();
+            /**
+             * In Case we Can Announce on All interfaces
+             */
+
+            if (ripv2Configuration.getPassiveInterface().isEmpty()) {
+                //
+                // We can announce on all networks
+                //
+                this.getInterfaces().forEach((uid, iFace) -> {
+                    /**
+                     * Build Route Annouce RipV2 as Mcast Packet
+                     */
+                    NMulticastGroup ripv2Group = iFace.joinMcastGroup("224.0.0.9"); // Ripv2 Group
+                    RipV2Payload payLoad = new RipV2Payload(ripv2Configuration.getNetworksAsList(), iFace.getAddress(), iFace);
+                    RipV2AnnoucePacket ripv2Announce = new RipV2AnnoucePacket(payLoad, ripv2Group);
+
+                    this.sendMcastPacket(ripv2Announce);
+                });
+            }
+
+        } catch (InvalidConfigurationCastException ex) {
+            Logger.getLogger(NRouter.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+    }
+
+    public void sendMcastPacket(MultiCastPacket mcastPacket) {
+        /**
+         * 1 Join Interface to the Group
+         */
+        NMulticastGroup group = mcastPacket.getSrcIface().joinMcastGroup(mcastPacket.getGroup());
+        /**
+         * Sent the packet to the joined group
+         */
+        group.sendMulticasPacket(mcastPacket);
+        System.out.println("Sent Mcast Packet to:" + group.getMcastGroup().toString() + " From:[" + mcastPacket.getSrcIface().getAddress()+ "/" + mcastPacket.getSrcIface().getMacAddress() + "]");
+
+    }
 }

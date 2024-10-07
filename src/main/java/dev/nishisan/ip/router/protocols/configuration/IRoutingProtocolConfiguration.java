@@ -15,18 +15,17 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.packet.processor;
+package dev.nishisan.ip.router.protocols.configuration;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.BroadCastPacket;
+import dev.nishisan.ip.router.exception.InvalidConfigurationCastException;
 
 /**
  *
  * @author lucas
  */
-public interface IPacketProcessor<T extends BroadCastPacket<T>> {
+public interface IRoutingProtocolConfiguration {
 
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace);
+    public String getConfigurationType();
 
-    public String getUuid();
+    public RipV2ProtocolConfiguration getRipV2Configuration() throws InvalidConfigurationCastException;
 }

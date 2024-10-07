@@ -26,7 +26,7 @@ import java.util.List;
  *
  * @author lucas
  */
-public class NRipV1Announce extends OnWireMsg<NRipV1Announce> {
+public class RipV1AnnouncePacket extends BroadCastPacket<RipV1AnnouncePacket> {
 
     private IPAddress source;
     private List<NRoutingEntry> networks = new ArrayList<>();

@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.base;
 
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.BroadCastPacket;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,15 +31,21 @@ public class NBroadCastDomain {
     /**
      * Mimics the Broadcast Domain
      */
-    private final PublishSubject<OnWireMsg> eventBus = PublishSubject.create();
+    private final PublishSubject<BroadCastPacket> eventBus = PublishSubject.create();
     private final Map<String, NMulticastGroup> mCastGroups = new ConcurrentHashMap<>();
+    private Long age = System.currentTimeMillis();
     private String name;
 
-    public PublishSubject<OnWireMsg> getEventBus() {
-        return eventBus;
+    public NBroadCastDomain(String name) {
+        this.name = name;
     }
 
-    public NBroadCastDomain() {
+    public void sendBroadcastPacket(BroadCastPacket packet) {
+        this.eventBus.onNext(packet);
+    }
+
+    public PublishSubject<BroadCastPacket> getEventBus() {
+        return eventBus;
     }
 
     public Map<String, NMulticastGroup> getmCastGroups() {
@@ -52,6 +58,44 @@ public class NBroadCastDomain {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public NMulticastGroup addInterfaceToMcastGroup(String group, NBaseInterface iFace) {
+        NMulticastGroup target = null;
+        if (!mCastGroups.containsKey(group)) {
+            target = this.createMcastGroup(group);
+            mCastGroups.put(group, target);
+        } else {
+            target = this.getMcastGroupByIp(group);
+        }
+
+        target.addSubscriberInterface(iFace);
+        return target;
+    }
+
+    public NMulticastGroup addInterfaceToMcastGroup(NMulticastGroup target, NBaseInterface iFace) {
+
+        if (!mCastGroups.containsKey(target.getMcastGroup().toString())) {
+            target = mCastGroups.put(target.getMcastGroup().toString(), target);
+        }
+
+        target.addSubscriberInterface(iFace);
+        return target;
+    }
+
+    private NMulticastGroup createMcastGroup(String group) {
+        NMulticastGroup mcastGroup = new NMulticastGroup(group);
+        this.mCastGroups.put(group, mcastGroup);
+        System.out.println("Mcast Group:[" + group + "] Created In:" + this.getName());
+        return mcastGroup;
+    }
+
+    public NMulticastGroup getMcastGroupByIp(String group) {
+        return this.mCastGroups.get(group);
+    }
+
+    public Long getAge() {
+        return age;
     }
 
 }

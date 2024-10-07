@@ -17,14 +17,14 @@
  */
 package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.BroadCastPacket;
 import java.util.UUID;
 
 /**
  *
  * @author lucas
  */
-public abstract class AbsPacketProcessor<T extends OnWireMsg<T>> implements IPacketProcessor<T> {
+public abstract class AbsPacketProcessor<T extends BroadCastPacket<T>> implements IPacketProcessor<T> {
 
     private final String uuid = UUID.randomUUID().toString();
 

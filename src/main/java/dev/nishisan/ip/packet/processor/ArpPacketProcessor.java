@@ -18,18 +18,18 @@
 package dev.nishisan.ip.packet.processor;
 
 import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.ArpRequest;
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.packet.ArpPacket;
+import dev.nishisan.ip.packet.BroadCastPacket;
 
 /**
  *
  * @author lucas
  */
-public class ArpPacketProcessor extends AbsPacketProcessor<ArpRequest> {
+public class ArpPacketProcessor extends AbsPacketProcessor<ArpPacket> {
 
     @Override
-    public void processPacket(OnWireMsg m, NBaseInterface iFace) {
-        if (m instanceof ArpRequest arp) {
+    public void processPacket(BroadCastPacket m, NBaseInterface iFace) {
+        if (m instanceof ArpPacket arp) {
             if (iFace.getAddress() != null) {
                 if (iFace.getAddress().equals(arp.getRequestAddress())) {
                     arp.setiFace(iFace);
