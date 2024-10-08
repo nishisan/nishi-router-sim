@@ -17,11 +17,11 @@
  */
 package dev.nishisan.ip.nswitch.ne;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
-import dev.nishisan.ip.base.NLink;
+import dev.nishisan.ip.base.BroadCastDomain;
+import dev.nishisan.ip.base.Link;
 import dev.nishisan.ip.packet.NPacket;
-import dev.nishisan.ip.packet.processor.ArpPacketProcessor;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,30 +33,40 @@ import java.util.Map;
  */
 public class NSwitch extends BaseNe<NSwitchInterface> {
 
-    private Map<String, NLink> links = Collections.synchronizedMap(new LinkedHashMap());
+    private Map<String, Link> links = Collections.synchronizedMap(new LinkedHashMap());
 
     public NSwitch(String name) {
         super(name);
     }
 
     public NSwitchInterface addInterface(String name, String description) {
-        NSwitchInterface iFace = new NSwitchInterface(name, description, this);
+        NSwitchInterface iFace = new NSwitchInterface(name, description, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
+        } else {
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
         }
         return iFace;
     }
 
     public NSwitchInterface addInterface(String name) {
-        NSwitchInterface iFace = new NSwitchInterface(name, this);
+        NSwitchInterface iFace = new NSwitchInterface(name, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         return iFace;
     }
 
-    public NLink connect(NBaseInterface src, NBaseInterface dst) {
-        NLink link = new NLink(src, dst);
+    public Link connect(BaseInterface src, BaseInterface dst) {
+        Link link = new Link(src, dst);
+        System.out.println("Connecting...");
         this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
+        if (src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+            }
+        }
+        System.out.println("Link Created:" + link.getDst().getOperStatus() + " -> " + link.getSrc().getOperStatus());
         return link;
     }
 
@@ -88,7 +98,12 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
 
     @Override
     public void registerProcessors() {
-//        this.addProcessor(new ArpPacketProcessor());
+
+    }
+
+    @Override
+    public void tick() {
+
     }
 
 }

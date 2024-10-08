@@ -17,33 +17,28 @@
  */
 package dev.nishisan.ip.base;
 
-import inet.ipaddr.IPAddress;
-import java.util.List;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
  *
  * @author lucas
  */
-public class NMulticastGroup {
+public class MultiCastSubscriptionEntry {
 
-    private IPAddress mcastGroup; // 239.1.1.1
+    private Disposable subscription;
+    private MulticastGroup group;
 
-    private List<NBaseInterface> subscribers;
-
-    public IPAddress getMcastGroup() {
-        return mcastGroup;
+    public MultiCastSubscriptionEntry(Disposable subscription, MulticastGroup group) {
+        this.subscription = subscription;
+        this.group = group;
     }
 
-    public void setMcastGroup(IPAddress mcastGroup) {
-        this.mcastGroup = mcastGroup;
+    public Disposable getSubscription() {
+        return subscription;
     }
 
-    public List<NBaseInterface> getSubscribers() {
-        return subscribers;
-    }
-
-    public void setSubscribers(List<NBaseInterface> subscribers) {
-        this.subscribers = subscribers;
+    public MulticastGroup getGroup() {
+        return group;
     }
 
 }

@@ -15,31 +15,20 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.packet.processor;
+package dev.nishisan.ip.router.protocols.configuration;
 
-import dev.nishisan.ip.packet.BroadCastPacket;
-import java.util.UUID;
+import dev.nishisan.ip.router.exception.InvalidConfigurationCastException;
 
 /**
  *
  * @author lucas
  */
-public abstract class AbsPacketProcessor<T extends BroadCastPacket<T>> implements IPacketProcessor<T> {
+public abstract class RoutingProtocolConfiguration implements IRoutingProtocolConfiguration {
 
-    private String name;
-
-    private final String uuid = UUID.randomUUID().toString();
-
-    public String getUuid() {
-        return uuid;
+    public RipV2ProtocolConfiguration getRipV2Configuration() throws InvalidConfigurationCastException {
+        if (this.getConfigurationType().equals(RipV2ProtocolConfiguration.type)) {
+            return (RipV2ProtocolConfiguration) this;
+        }
+        throw new InvalidConfigurationCastException();
     }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
 }

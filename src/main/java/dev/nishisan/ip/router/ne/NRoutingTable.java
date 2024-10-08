@@ -58,6 +58,71 @@ public class NRoutingTable {
         System.out.println("Router.........:[" + this.router.getName() + "]");
         System.out.println("Routing Table..:[" + this.name + "]");
         System.out.println("Prefixes v4....:[" + this.entries.size() + "]");
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+
+        // Legenda do comando show ip route
+        System.out.println("Codes: C - connected, S - static, R - RIP");
+
+        AtomicLong idx = new AtomicLong(1L);
+        this.entries.forEach((k, v) -> {
+
+            StringBuilder b = new StringBuilder();
+
+            // Identificando o tipo de rota com base no enum NRouteType
+            switch (v.getType()) {
+                case CONNECTED:
+                    b.append("C    "); // Rota Conectada
+                    break;
+                case STATIC:
+                    b.append("S    "); // Rota Estática
+                    break;
+                case RIP:
+                    b.append("R    "); // Rota RIP
+                    break;
+                default:
+                    b.append("?    "); // Desconhecido
+                    break;
+            }
+
+            // Prefixo e Métricas (ID - AD/Métrica)
+            b.append(v.getDst().toPrefixBlock().toString())
+                    .append(" [")
+                    .append(v.getAdminDistance())
+                    .append("/")
+                    .append(v.getMetric())
+                    .append("] ");
+
+            // Próximo salto (Next hop)
+            if (v.getNextHop() != null) {
+                b.append("via ").append(v.getNextHop().toString()).append(", ");
+            }
+
+            // Interface e Tempo fictício
+            if (v.getDev() != null) {
+                b.append(v.getDev().getName()).append(", ");
+            }
+
+            b.append(v.getStringUptime()).append(" "); // Adiciona o tempo formatado
+
+            // Escopo e Origem
+            if (v.getScope() != null) {
+                b.append("scope ").append(v.getScope());
+            }
+            if (v.getSrc() != null) {
+                b.append(" src ").append(v.getSrc().toInetAddress().getHostAddress());
+            }
+
+            System.out.println(b.toString());
+        });
+
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+    }
+
+    public void printRoutingTable2() {
+        System.out.println("-----------------------------------------------------------------------------------------------------");
+        System.out.println("Router.........:[" + this.router.getName() + "]");
+        System.out.println("Routing Table..:[" + this.name + "]");
+        System.out.println("Prefixes v4....:[" + this.entries.size() + "]");
 
         System.out.println("-----------------------------------------------------------------------------------------------------");
         AtomicLong idx = new AtomicLong(1L);
@@ -161,7 +226,7 @@ public class NRoutingTable {
         } finally {
             Long e = System.currentTimeMillis();
             Long t = e - s;
-            System.out.println("Took :[" + t + "] (ms) To Search in:[" + this.entries.size() + "] Entries");
+//            System.out.println("Took :[" + t + "] (ms) To Search in:[" + this.entries.size() + "] Entries");
         }
     }
 }

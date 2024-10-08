@@ -15,31 +15,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.packet.processor;
+package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.packet.BroadCastPacket;
-import java.util.UUID;
+import dev.nishisan.ip.base.MulticastGroup;
+import dev.nishisan.ip.packet.payload.RipV2Payload;
 
 /**
  *
  * @author lucas
  */
-public abstract class AbsPacketProcessor<T extends BroadCastPacket<T>> implements IPacketProcessor<T> {
+public class RipV2AnnoucePacket extends MultiCastPacket<RipV2Payload> {
 
-    private String name;
-
-    private final String uuid = UUID.randomUUID().toString();
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
+    public RipV2AnnoucePacket(RipV2Payload payLoad, MulticastGroup group) {
+        super(payLoad, group, payLoad.getSrcIface());
     }
 
 }

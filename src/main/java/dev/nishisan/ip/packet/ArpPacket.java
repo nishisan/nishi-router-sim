@@ -17,8 +17,8 @@
  */
 package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
 
@@ -27,17 +27,17 @@ import inet.ipaddr.IPAddress;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 02.10.2024
  */
-public class ArpRequest extends OnWireMsg<ArpRequest> {
+public class ArpPacket extends BroadCastPacket<ArpPacket> {
 
     private final IPAddress requestAddress;
 
-    private NBaseInterface iFace;
-    
-    public ArpRequest(String requestAddress) {
+    private BaseInterface iFace;
+
+    public ArpPacket(String requestAddress) {
         this.requestAddress = NRoutingEntry.getIpAddress(requestAddress);
     }
-    
-    public ArpRequest(IPAddress requestAddress) {
+
+    public ArpPacket(IPAddress requestAddress) {
         this.requestAddress = requestAddress;
     }
 
@@ -45,14 +45,12 @@ public class ArpRequest extends OnWireMsg<ArpRequest> {
         return requestAddress;
     }
 
-    public NBaseInterface getiFace() {
+    public BaseInterface getiFace() {
         return iFace;
     }
 
-    public void setiFace(NBaseInterface iFace) {
+    public void setiFace(BaseInterface iFace) {
         this.iFace = iFace;
     }
 
-    
-    
 }

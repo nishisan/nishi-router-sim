@@ -58,9 +58,18 @@ public class SimpleRipV1Example {
 
         vSwitch1.printInterfaces();
 
-        router1.sendRipAnnouce(s).thenAccept(r -> {
+        /**
+         * Send Announce on all interfaces on default Vlan
+         */
+        router1.sendRipV1Annouce(s).thenAccept(r -> {
             System.out.println("Rip Sent");
         });
+
+        try {
+            Thread.sleep(5 * 1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimpleRipV1Example.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         router1.printRoutingTable();
         router2.printRoutingTable();

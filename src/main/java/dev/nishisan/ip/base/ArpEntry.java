@@ -25,14 +25,14 @@ import java.util.concurrent.atomic.AtomicLong;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 01.10.2024
  */
-public class NArpEntry {
+public class ArpEntry {
 
     private String macAddress;
-    private NBaseInterface iFace;
+    private BaseInterface iFace;
     private IPAddress ipAddress;
     private AtomicLong expiresIn = new AtomicLong(60L);
 
-    public NArpEntry(String macAddress, NBaseInterface iFace, IPAddress ipAddress) {
+    public ArpEntry(String macAddress, BaseInterface iFace, IPAddress ipAddress) {
         this.macAddress = macAddress;
         this.iFace = iFace;
         this.ipAddress = ipAddress;
@@ -46,11 +46,11 @@ public class NArpEntry {
         this.macAddress = macAddress;
     }
 
-    public NBaseInterface getiFace() {
+    public BaseInterface getiFace() {
         return iFace;
     }
 
-    public void setiFace(NBaseInterface iFace) {
+    public void setiFace(BaseInterface iFace) {
         this.iFace = iFace;
     }
 

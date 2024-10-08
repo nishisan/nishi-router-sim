@@ -17,16 +17,18 @@
  */
 package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.packet.OnWireMsg;
+import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.packet.BroadCastPacket;
 
 /**
  *
  * @author lucas
  */
-public interface IPacketProcessor<T extends OnWireMsg<T>> {
+public interface IPacketProcessor<T extends BroadCastPacket<T>> {
 
-    public void processPacket(OnWireMsg m, NBaseInterface iFace);
+    public void processPacket(BroadCastPacket m, BaseInterface iFace);
 
     public String getUuid();
+    
+    public String getName();
 }
