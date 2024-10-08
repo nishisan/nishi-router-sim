@@ -15,31 +15,30 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
-package dev.nishisan.ip.packet.processor;
+package dev.nishisan.ip.base;
 
-import dev.nishisan.ip.packet.BroadCastPacket;
-import java.util.UUID;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 /**
  *
  * @author lucas
  */
-public abstract class AbsPacketProcessor<T extends BroadCastPacket<T>> implements IPacketProcessor<T> {
+public class MultiCastSubscriptionEntry {
 
-    private String name;
+    private Disposable subscription;
+    private MulticastGroup group;
 
-    private final String uuid = UUID.randomUUID().toString();
-
-    public String getUuid() {
-        return uuid;
+    public MultiCastSubscriptionEntry(Disposable subscription, MulticastGroup group) {
+        this.subscription = subscription;
+        this.group = group;
     }
 
-    public String getName() {
-        return name;
+    public Disposable getSubscription() {
+        return subscription;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public MulticastGroup getGroup() {
+        return group;
     }
 
 }

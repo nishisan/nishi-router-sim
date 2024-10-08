@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.packet.ArpPacket;
 import dev.nishisan.ip.packet.BroadCastPacket;
 
@@ -27,9 +27,14 @@ import dev.nishisan.ip.packet.BroadCastPacket;
  */
 public class ArpPacketProcessor extends AbsPacketProcessor<ArpPacket> {
 
+    public ArpPacketProcessor() {
+        this.setName("ARP_PROCESSOR");
+    }
+
     @Override
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace) {
+    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
         if (m instanceof ArpPacket arp) {
+//            System.out.println("Arp Packet");
             if (iFace.getAddress() != null) {
                 if (iFace.getAddress().equals(arp.getRequestAddress())) {
                     arp.setiFace(iFace);
@@ -37,8 +42,13 @@ public class ArpPacketProcessor extends AbsPacketProcessor<ArpPacket> {
                      * Encontrei a interface que eu queria
                      */
                     arp.reply(arp);
+                    System.out.println("Pong::" + iFace.getAddress() + " " + arp.getRequestAddress());
+                } else {
+//                    System.out.println("Not Pong");
                 }
             }
+        } else {
+//            System.out.println("Something Else");
         }
     }
 

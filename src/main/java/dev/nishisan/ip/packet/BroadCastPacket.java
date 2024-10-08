@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.UUID;
@@ -35,7 +35,7 @@ public class BroadCastPacket<T extends BroadCastPacket<T>> implements Serializab
 
     private Integer vlanId = 0;
     private Consumer<T> replyCallback;
-    private Map<String, NBaseInterface> walked = new ConcurrentHashMap<>();
+    private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
 
     public String getUid() {
         return uid;
@@ -47,7 +47,7 @@ public class BroadCastPacket<T extends BroadCastPacket<T>> implements Serializab
 
     public void reply(T response) {
         if (this.replyCallback != null) {
-            System.out.println("Reply from: " + this.uid + " To:" + response.getUid());
+//            System.out.println("Reply from: " + this.uid + " To:" + response.getUid());
             this.replyCallback.accept(response);
         } else {
             System.out.println("Reply Is Null!");
@@ -75,11 +75,11 @@ public class BroadCastPacket<T extends BroadCastPacket<T>> implements Serializab
         this.replyCallback = replyCallback;
     }
 
-    public Boolean walked(NBaseInterface i) {
+    public Boolean walked(BaseInterface i) {
         return this.walked.containsKey(i.getUid());
     }
 
-    public void notifyWalk(NBaseInterface i) {
+    public void notifyWalk(BaseInterface i) {
         this.walked.put(i.getUid(), i);
     }
 

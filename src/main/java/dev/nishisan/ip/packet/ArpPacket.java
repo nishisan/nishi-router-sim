@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
@@ -31,7 +31,7 @@ public class ArpPacket extends BroadCastPacket<ArpPacket> {
 
     private final IPAddress requestAddress;
 
-    private NBaseInterface iFace;
+    private BaseInterface iFace;
 
     public ArpPacket(String requestAddress) {
         this.requestAddress = NRoutingEntry.getIpAddress(requestAddress);
@@ -45,11 +45,11 @@ public class ArpPacket extends BroadCastPacket<ArpPacket> {
         return requestAddress;
     }
 
-    public NBaseInterface getiFace() {
+    public BaseInterface getiFace() {
         return iFace;
     }
 
-    public void setiFace(NBaseInterface iFace) {
+    public void setiFace(BaseInterface iFace) {
         this.iFace = iFace;
     }
 

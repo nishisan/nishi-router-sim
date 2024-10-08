@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 /**
@@ -43,6 +44,7 @@ public class NPacket {
     private Integer originalTtl = 64;
     private NPacketType type = NPacketType.REQUEST;
     private NPacket source;
+    private NPacket reply;
     private CompletableFuture<NPacket> replyFuture = new CompletableFuture<>();
 
     public enum NPacketType {
@@ -55,12 +57,24 @@ public class NPacket {
     }
 
     public void reply() {
+
         replyFuture.complete(this.source);
     }
 
     public void onReply(int timeoutInSeconds, Consumer<NPacket> replyHandler) {
         replyFuture.orTimeout(timeoutInSeconds, TimeUnit.SECONDS)
                 .thenAccept(replyHandler)
+                .exceptionally(ex -> {
+                    System.out.println("Timeout ou erro: " + ex.getMessage());
+                    return null;
+                });
+    }
+
+    public void onReply(int timeoutInSeconds, BiConsumer<NPacket, NPacket> replyHandler) {
+        replyFuture.orTimeout(timeoutInSeconds, TimeUnit.SECONDS)
+                .thenAccept(reply -> {
+                    replyHandler.accept(this, this.getReply());
+                })
                 .exceptionally(ex -> {
                     System.out.println("Timeout ou erro: " + ex.getMessage());
                     return null;
@@ -176,6 +190,27 @@ public class NPacket {
 
     public NPacket getSource() {
         return source;
+    }
+
+    public void setSource(NPacket s) {
+        this.source = s;
+    }
+
+    public void setReply(NPacket s) {
+        this.reply = s;
+    }
+
+    public NPacket getReply() {
+        return this.reply;
+    }
+
+    public Long getRtt() {
+        if (this.reply != null) {
+            Long took = this.reply.endTimestamp - this.startTimestamp;
+            return took;
+        } else {
+            return -1L;
+        }
     }
 
 }

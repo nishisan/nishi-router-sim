@@ -17,20 +17,20 @@
  */
 package dev.nishisan.ip.router.ne;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.base.NBroadCastDomain;
+import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.base.BroadCastDomain;
 import inet.ipaddr.IPAddressString;
 
-public class NRouterInterface extends NBaseInterface {
+public class NRouterInterface extends BaseInterface {
 
     private NRouter router;
 
-    public NRouterInterface(String name, NRouter router, NBroadCastDomain broadCastDomain) {
+    public NRouterInterface(String name, NRouter router, BroadCastDomain broadCastDomain) {
         super(name, router, broadCastDomain);
         this.router = router;
     }
 
-    public NRouterInterface(String name, String address, NRouter router, NBroadCastDomain broadCastDomain) {
+    public NRouterInterface(String name, String address, NRouter router, BroadCastDomain broadCastDomain) {
         super(name, router, broadCastDomain);
         this.setAddress(new IPAddressString(address).getAddress());
         this.router = router;

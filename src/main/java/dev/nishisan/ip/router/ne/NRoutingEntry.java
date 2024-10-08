@@ -224,24 +224,27 @@ public class NRoutingEntry {
         return adminDistance;
     }
 
-    public void setAdminDistance(Integer adminDistance) {
+    public NRoutingEntry setAdminDistance(Integer adminDistance) {
         this.adminDistance = adminDistance;
+        return this;
     }
 
     public Integer getDistance() {
         return distance;
     }
 
-    public void setDistance(Integer distance) {
+    public NRoutingEntry setDistance(Integer distance) {
         this.distance = distance;
+        return this;
     }
 
     public NRouteType getType() {
         return type;
     }
 
-    public void setType(NRouteType type) {
+    public NRoutingEntry setType(NRouteType type) {
         this.type = type;
+        return this;
     }
 
     public Long getUpSince() {

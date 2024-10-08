@@ -18,9 +18,8 @@
 package dev.nishisan.ip.router.ne;
 
 import dev.nishisan.ip.router.ne.configuration.NRouterConfig;
-import dev.nishisan.ip.base.NBaseInterface;
 import dev.nishisan.ip.base.BaseNe;
-import dev.nishisan.ip.base.NMulticastGroup;
+import dev.nishisan.ip.base.MulticastGroup;
 import dev.nishisan.ip.packet.MultiCastPacket;
 import dev.nishisan.ip.packet.NPacket;
 import dev.nishisan.ip.packet.RipV1AnnouncePacket;
@@ -73,24 +72,28 @@ public class NRouter extends BaseNe<NRouterInterface> {
     public NRouterInterface addInterface(String name, String address) {
         NRouterInterface iFace = new NRouterInterface(name, address, this, this.getDefaultBroadcastDomain());
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(NRouterInterface.NIfaceOperStatus.OPER_DOWN);
         }
         this.getInterfaces().put(name, iFace);
-        this.mainRouteTable.addStaticRouteEntry(iFace.getAddress().toPrefixBlock(),
-                null,
-                iFace.getAddress(),
-                iFace, NRouteEntryScope.link);
+
         return iFace;
     }
 
+    /**
+     * Add a new interface to the router
+     *
+     * @param name
+     * @param address
+     * @param description
+     * @return
+     */
     public NRouterInterface addInterface(String name, String address, String description) {
         NRouterInterface iFace = new NRouterInterface(name, address, this, this.getDefaultBroadcastDomain());
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(NRouterInterface.NIfaceOperStatus.OPER_DOWN);
         }
         iFace.setDescription(description);
         this.getInterfaces().put(name, iFace);
-        this.mainRouteTable.addStaticRouteEntry(iFace.getAddress().toPrefixBlock(), null, iFace.getAddress(), iFace, NRouteEntryScope.link);
         return iFace;
     }
 
@@ -212,7 +215,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
 
                     //routeEntry.get().print();
                     if (routeEntry.get().getSrc().equals(p.getDst())) {
-                        System.out.println("Ping!");
+
                         //
                         // Should we generate a pong ?
                         //
@@ -223,12 +226,18 @@ public class NRouter extends BaseNe<NRouterInterface> {
                         //Raise Back round
                         //
                         if (p.getType().equals(NPacket.NPacketType.REQUEST)) {
+//                            System.out.println("Ping! 1");
                             //
                             // Answer only for reply
                             //
-                            routeEntry.get().getDev().sendPacket(p.createReply());
+                            NPacket r = routeEntry.get().getDev().sendPacket(p.createReply());
                         } else {
+//                            System.out.println("Ping! 2");
                             if (p.getSource() != null) {
+                                /**
+                                 * Link request and reply
+                                 */
+                                p.getSource().setReply(p);
                                 p.getSource().reply();
                             }
                         }
@@ -243,15 +252,13 @@ public class NRouter extends BaseNe<NRouterInterface> {
                     // We need to check if we can find the arp entry of the routing destination
                     //
                     this.sendArpRequest(routeEntry.get().getNextHop()).thenAccept(r -> {
-                        System.out.println(" :: ARP Found on:[" + r.getUid() + "]"
-                                + " IP:[" + routeEntry.get().getNextHop() + "] Mac:[" + r.getMacAddress()
-                                + "]");
-                        System.out.println("------------------------------------------------------------------------------------------------------------------");
+//                        System.out.println(" :: ARP Found on:[" + r.getUid() + "]"
+//                                + " IP:[" + routeEntry.get().getNextHop() + "] Mac:[" + r.getMacAddress()
+//                                + "]");
+//                        System.out.println("------------------------------------------------------------------------------------------------------------------");
                         r.sendPacket(p);
-
                     }).orTimeout(p.getTimeout(), TimeUnit.SECONDS).exceptionally(ex -> {
-                        // Tratamento em caso de timeout ou exceção
-                        ex.printStackTrace();
+                        // Tratamento em caso de timeout ou exceção                      
                         System.out.println("Arp Timeout:" + ex.getMessage());
                         return null;
                     }).join();
@@ -324,33 +331,37 @@ public class NRouter extends BaseNe<NRouterInterface> {
      */
     private void processRoutingProtocols() {
         if (this.routerConfiguration.getRouterProtocolsConfiguration().containsKey(RipV2ProtocolConfiguration.type)) {
-            this.processRipV2RoutingProcotol();
+            this.annouceRipV2RoutingProcotol();
         }
 
     }
 
-    private void processRipV2RoutingProcotol() {
+    private void annouceRipV2RoutingProcotol() {
         IRoutingProtocolConfiguration protocol = this.routerConfiguration.getRouterProtocolsConfiguration().get(RipV2ProtocolConfiguration.type);
         try {
             RipV2ProtocolConfiguration ripv2Configuration = protocol.getRipV2Configuration();
-            /**
-             * In Case we Can Announce on All interfaces
-             */
 
-            if (ripv2Configuration.getPassiveInterface().isEmpty()) {
-                //
-                // We can announce on all networks
-                //
-                this.getInterfaces().forEach((uid, iFace) -> {
-                    /**
-                     * Build Route Annouce RipV2 as Mcast Packet
-                     */
-                    NMulticastGroup ripv2Group = iFace.joinMcastGroup("224.0.0.9"); // Ripv2 Group
-                    RipV2Payload payLoad = new RipV2Payload(ripv2Configuration.getNetworksAsList(), iFace.getAddress(), iFace);
-                    RipV2AnnoucePacket ripv2Announce = new RipV2AnnoucePacket(payLoad, ripv2Group);
+            if (ripv2Configuration.getEnabled()) {
+                /**
+                 * In Case we Can Announce on All interfaces and Join All
+                 * Interfaces
+                 */
+                if (ripv2Configuration.getPassiveInterface().isEmpty()) {
+                    //
+                    // We can announce on all networks
+                    //
+                    this.getInterfaces().forEach((uid, iFace) -> {
+                        /**
+                         * Build Route Annouce RipV2 as Mcast Packet
+                         */
+                        MulticastGroup ripv2Group = iFace.joinMcastGroup("224.0.0.9"); // Join Ripv2 Group
 
-                    this.sendMcastPacket(ripv2Announce);
-                });
+                        RipV2Payload payLoad = new RipV2Payload(ripv2Configuration.getNetworksAsList(), iFace.getAddress(), iFace);
+                        RipV2AnnoucePacket ripv2Announce = new RipV2AnnoucePacket(payLoad, ripv2Group);
+
+                        this.sendMcastPacket(ripv2Announce);
+                    });
+                }
             }
 
         } catch (InvalidConfigurationCastException ex) {
@@ -363,12 +374,16 @@ public class NRouter extends BaseNe<NRouterInterface> {
         /**
          * 1 Join Interface to the Group
          */
-        NMulticastGroup group = mcastPacket.getSrcIface().joinMcastGroup(mcastPacket.getGroup());
+        MulticastGroup group = mcastPacket.getSrcIface().joinMcastGroup(mcastPacket.getGroup());
         /**
          * Sent the packet to the joined group
          */
         group.sendMulticasPacket(mcastPacket);
-        System.out.println("Sent Mcast Packet to:" + group.getMcastGroup().toString() + " From:[" + mcastPacket.getSrcIface().getAddress()+ "/" + mcastPacket.getSrcIface().getMacAddress() + "]");
+        System.out.println("Sent Mcast Packet to:" + group.getMcastGroup().toString() + " From:[" + mcastPacket.getSrcIface().getAddress() + "/" + mcastPacket.getSrcIface().getMacAddress() + "]");
 
+    }
+
+    public NRoutingTable getMainRouteTable() {
+        return this.mainRouteTable;
     }
 }

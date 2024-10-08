@@ -22,6 +22,7 @@ import dev.nishisan.ip.packet.NPacket;
 import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.packet.processor.IPacketProcessor;
 import dev.nishisan.ip.router.ne.NRouter;
+import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Collections;
@@ -38,20 +39,20 @@ import java.util.logging.Logger;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 01.10.2024
  */
-public abstract class BaseNe<T extends NBaseInterface> {
+public abstract class BaseNe<T extends BaseInterface> {
 
     private final String name;
     /**
      * Vlan Default
      */
-    private NBroadCastDomain defaultBroadcastDomain = new NBroadCastDomain("default");
+    private BroadCastDomain defaultBroadcastDomain = new BroadCastDomain("default", this);
 
     private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
     private Map<String, IPacketProcessor> processors = Collections.synchronizedMap(new LinkedHashMap());
     private String osVersion = "Nishi Os - v0.01 - Core (1.0)";
     private AtomicBoolean running = new AtomicBoolean(false);
     private Thread tickThread;
-
+    private Integer tickTime = 1;
     private String uuid = UUID.randomUUID().toString();
 
     public BaseNe(String name) {
@@ -90,9 +91,9 @@ public abstract class BaseNe<T extends NBaseInterface> {
         this.defaultBroadcastDomain.getEventBus();
     }
 
-    public CompletableFuture<NBaseInterface> sendArpRequest(String ip) {
+    public CompletableFuture<BaseInterface> sendArpRequest(String ip) {
         ArpPacket r = new ArpPacket(ip);
-        CompletableFuture<NBaseInterface> future = new CompletableFuture<>();
+        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
         r.onReply(o -> {
             future.complete(o.getiFace());
         });
@@ -100,9 +101,9 @@ public abstract class BaseNe<T extends NBaseInterface> {
         return future;
     }
 
-    public CompletableFuture<NBaseInterface> sendArpRequest(IPAddress ip) {
+    public CompletableFuture<BaseInterface> sendArpRequest(IPAddress ip) {
         ArpPacket r = new ArpPacket(ip);
-        CompletableFuture<NBaseInterface> future = new CompletableFuture<>();
+        CompletableFuture<BaseInterface> future = new CompletableFuture<>();
 
         r.onReply(o -> {
             future.complete(o.getiFace());
@@ -135,11 +136,12 @@ public abstract class BaseNe<T extends NBaseInterface> {
 
     public abstract void forwardPacket(NPacket packet);
 
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace) {
+    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
         /**
          * Chama a implementação dos processadores registrados
          */
         this.getProcessors().forEach((k, p) -> {
+//            System.out.println(" Processing Packet:[" + k + "] Of Type:" + p.getName());
             p.processPacket(m, iFace);
         });
 
@@ -148,8 +150,8 @@ public abstract class BaseNe<T extends NBaseInterface> {
     public abstract void registerProcessors();
 
     public void addProcessor(IPacketProcessor processor) {
-
-        this.processors.put(name, processor);
+        System.out.println("Packet Processor:[" + processor.getName() + "] Added To:[" + this.name + "]");
+        this.processors.put(processor.getName(), processor);
     }
 
     public Map<String, IPacketProcessor> getProcessors() {
@@ -160,7 +162,15 @@ public abstract class BaseNe<T extends NBaseInterface> {
         return (NRouter) this;
     }
 
-    public NBroadCastDomain getDefaultBroadcastDomain() {
+    public Boolean isRouter() {
+        if (this instanceof NRouter) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public BroadCastDomain getDefaultBroadcastDomain() {
         return defaultBroadcastDomain;
     }
 
@@ -182,9 +192,9 @@ public abstract class BaseNe<T extends NBaseInterface> {
                 tick();
 
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(tickTime * 1000);
                 } catch (InterruptedException ex) {
-                    Logger.getLogger(BaseNe.class.getName()).log(Level.SEVERE, null, ex);
+//                    Logger.getLogger(BaseNe.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
 
@@ -220,4 +230,35 @@ public abstract class BaseNe<T extends NBaseInterface> {
         return uuid;
     }
 
+    public void onIFaceOperStatusChanged(BaseInterface iFace) {
+        if (iFace.isOperStatusUp()) {
+            /**
+             * Only add the route if the interface is up
+             */
+            if (iFace.getNe().isRouter()) {
+                if (iFace.isNRouterInterface()) {
+                    iFace.getNe().asNrouter().getMainRouteTable().addStaticRouteEntry(iFace.getAddress().toPrefixBlock(),
+                            null,
+                            iFace.getAddress(),
+                            iFace.asNRouterInterface(), NRoutingEntry.NRouteEntryScope.link).setType(NRoutingEntry.NRouteType.CONNECTED);
+                }
+            }
+        } else {
+            //
+            // Remove Route Entries..
+            //
+
+        }
+    }
+
+    public Integer getTickTime() {
+        return tickTime;
+    }
+
+    public void setTickTime(Integer tickTime) {
+        this.tickTime = tickTime;
+    }
+
+    
+    
 }

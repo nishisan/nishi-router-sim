@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.base.NMulticastGroup;
+import dev.nishisan.ip.base.MulticastGroup;
 import dev.nishisan.ip.packet.payload.RipV2Payload;
 
 /**
@@ -26,7 +26,7 @@ import dev.nishisan.ip.packet.payload.RipV2Payload;
  */
 public class RipV2AnnoucePacket extends MultiCastPacket<RipV2Payload> {
 
-    public RipV2AnnoucePacket(RipV2Payload payLoad, NMulticastGroup group) {
+    public RipV2AnnoucePacket(RipV2Payload payLoad, MulticastGroup group) {
         super(payLoad, group, payLoad.getSrcIface());
     }
 

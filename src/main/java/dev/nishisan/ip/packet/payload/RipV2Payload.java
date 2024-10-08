@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet.payload;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
 import java.util.List;
@@ -31,9 +31,9 @@ public class RipV2Payload {
     private List<NRoutingEntry> networks;
     private String sourceSystemUid;
     private IPAddress srcAddress;
-    private NBaseInterface srcIface;
+    private BaseInterface srcIface;
 
-    public RipV2Payload(List<NRoutingEntry> networks, IPAddress srcAddress, NBaseInterface srcIface) {
+    public RipV2Payload(List<NRoutingEntry> networks, IPAddress srcAddress, BaseInterface srcIface) {
         this.networks = networks;
         this.srcAddress = srcAddress;
         this.srcIface = srcIface;
@@ -56,11 +56,11 @@ public class RipV2Payload {
         this.srcAddress = srcAddress;
     }
 
-    public NBaseInterface getSrcIface() {
+    public BaseInterface getSrcIface() {
         return srcIface;
     }
 
-    public void setSrcIface(NBaseInterface srcIface) {
+    public void setSrcIface(BaseInterface srcIface) {
         this.srcIface = srcIface;
     }
 

@@ -17,10 +17,10 @@
  */
 package dev.nishisan.ip.nswitch.ne;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
-import dev.nishisan.ip.base.NBroadCastDomain;
-import dev.nishisan.ip.base.NLink;
+import dev.nishisan.ip.base.BroadCastDomain;
+import dev.nishisan.ip.base.Link;
 import dev.nishisan.ip.packet.NPacket;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class NSwitch extends BaseNe<NSwitchInterface> {
 
-    private Map<String, NLink> links = Collections.synchronizedMap(new LinkedHashMap());
+    private Map<String, Link> links = Collections.synchronizedMap(new LinkedHashMap());
 
     public NSwitch(String name) {
         super(name);
@@ -43,9 +43,9 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         NSwitchInterface iFace = new NSwitchInterface(name, description, this, this.getDefaultBroadcastDomain());
         this.getInterfaces().put(name, iFace);
         if (iFace.getLink() == null) {
-            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_DOWN);
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_DOWN);
         } else {
-            iFace.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+            iFace.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
         }
         return iFace;
     }
@@ -56,15 +56,17 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         return iFace;
     }
 
-    public NLink connect(NBaseInterface src, NBaseInterface dst) {
-        NLink link = new NLink(src, dst);
-        if (src.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-            if (dst.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-                src.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
-                dst.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+    public Link connect(BaseInterface src, BaseInterface dst) {
+        Link link = new Link(src, dst);
+        System.out.println("Connecting...");
+        this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
+        if (src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
             }
         }
-        this.links.put(src.getMacAddress() + "." + dst.getMacAddress(), link);
+        System.out.println("Link Created:" + link.getDst().getOperStatus() + " -> " + link.getSrc().getOperStatus());
         return link;
     }
 

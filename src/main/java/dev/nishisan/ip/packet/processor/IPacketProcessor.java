@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.packet.BroadCastPacket;
 
 /**
@@ -26,7 +26,9 @@ import dev.nishisan.ip.packet.BroadCastPacket;
  */
 public interface IPacketProcessor<T extends BroadCastPacket<T>> {
 
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace);
+    public void processPacket(BroadCastPacket m, BaseInterface iFace);
 
     public String getUuid();
+    
+    public String getName();
 }

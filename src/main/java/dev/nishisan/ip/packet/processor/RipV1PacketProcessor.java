@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.packet.processor;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.packet.RipV1AnnouncePacket;
 import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.router.ne.NRouter;
@@ -27,9 +27,13 @@ import dev.nishisan.ip.router.ne.NRouter;
  * @author lucas
  */
 public class RipV1PacketProcessor extends AbsPacketProcessor<RipV1AnnouncePacket> {
-    
+
+    public RipV1PacketProcessor() {
+        this.setName("RIP_V1_PROCESSOR");
+    }
+
     @Override
-    public void processPacket(BroadCastPacket m, NBaseInterface iFace) {
+    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
         if (m instanceof RipV1AnnouncePacket ripAnnouce) {
             //
             // Responde ele mesmo para testar..
@@ -42,13 +46,13 @@ public class RipV1PacketProcessor extends AbsPacketProcessor<RipV1AnnouncePacket
                 /**
                  * Sou um router :)
                  */
-                
+
                 if (iFace.getAddress() != null) {
                     /**
                      * Vou verificar se minha interface está na mesma subnet do
                      * anuncio
                      */
-                    
+
                     if (iFace.getAddress().prefixEquals(ripAnnouce.getSource())) {
                         /**
                          * Mesma rede, podemos adicionar as rotas :)
@@ -59,17 +63,17 @@ public class RipV1PacketProcessor extends AbsPacketProcessor<RipV1AnnouncePacket
                              */
                             NRouter router = iFace.getNe().asNrouter();
                             System.out.println("Adding:" + ripAnnouce.getNetworks().size() + " Networks TO:[" + router.getName() + "]");
-                            
+
                             ripAnnouce.getNetworks().forEach(net -> {
                                 router.addRipRouteEntry(net.getDst(), ripAnnouce.getSource(), null, null);
                             });
                         }
                     }
                 }
-                
+
             }
-            
+
         }
     }
-    
+
 }

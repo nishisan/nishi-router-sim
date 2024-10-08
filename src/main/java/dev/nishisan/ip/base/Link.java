@@ -22,62 +22,62 @@ package dev.nishisan.ip.base;
  * @author Lucas Nishimura <lucas.nishimura at gmail.com>
  * created 02.10.2024
  */
-public class NLink {
+public class Link {
 
-    private NBaseInterface src;
-    private NBaseInterface dst;
+    private BaseInterface src;
+    private BaseInterface dst;
     private Integer vlanId = 0;
     private Integer latency = 0;
     private Integer jitter = 0;
 
-    public NLink(NBaseInterface src, NBaseInterface dst) {
+    public Link(BaseInterface src, BaseInterface dst) {
         this.src = src;
         this.dst = dst;
         this.src.setLink(this);
         this.dst.setLink(this);
 
-        if (this.src.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-            if (this.dst.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-                this.src.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
-                this.dst.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                this.src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                this.dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
             }
         }
 
     }
 
-    public NLink(NBaseInterface src, NBaseInterface dst, Integer latency, Integer jitter) {
+    public Link(BaseInterface src, BaseInterface dst, Integer latency, Integer jitter) {
         this.src = src;
         this.dst = dst;
         
         this.src.setLink(this);
         this.dst.setLink(this);
 
-        if (this.src.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-            if (this.dst.getAdminStatus().equals(NBaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
-                this.src.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
-                this.dst.setOperStatus(NBaseInterface.NIfaceOperStatus.OPER_UP);
+        if (this.src.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+            if (this.dst.getAdminStatus().equals(BaseInterface.NIfaceAdminStatus.ADMIN_UP)) {
+                this.src.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+                this.dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
             }
         }
 
     }
 
-    public NBaseInterface getSrc() {
+    public BaseInterface getSrc() {
         return src;
     }
 
-    public void setSrc(NBaseInterface src) {
+    public void setSrc(BaseInterface src) {
         this.src = src;
     }
 
-    public NBaseInterface getDst() {
+    public BaseInterface getDst() {
         return dst;
     }
 
-    public void setDst(NBaseInterface dst) {
+    public void setDst(BaseInterface dst) {
         this.dst = dst;
     }
 
-    public NBaseInterface getOtherIface(NBaseInterface i) {
+    public BaseInterface getOtherIface(BaseInterface i) {
         if (this.src.equals(i)) {
             return this.dst;
         } else {
@@ -97,7 +97,7 @@ public class NLink {
         return latency;
     }
 
-    public NLink setLatency(Integer latency) {
+    public Link setLatency(Integer latency) {
         this.latency = latency;
         return this;
     }
@@ -106,7 +106,7 @@ public class NLink {
         return jitter;
     }
 
-    public NLink setJitter(Integer jitter) {
+    public Link setJitter(Integer jitter) {
         this.jitter = jitter;
         return this;
     }

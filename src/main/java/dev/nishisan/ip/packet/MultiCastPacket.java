@@ -17,9 +17,11 @@
  */
 package dev.nishisan.ip.packet;
 
-import dev.nishisan.ip.base.NBaseInterface;
-import dev.nishisan.ip.base.NMulticastGroup;
+import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.base.MulticastGroup;
 import inet.ipaddr.IPAddress;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -28,11 +30,12 @@ import inet.ipaddr.IPAddress;
 public abstract class MultiCastPacket<O> {
 
     private O payLoad;
-    private NMulticastGroup group;
+    private MulticastGroup group;
     private IPAddress srcAddress;
-    private NBaseInterface srcIface;
+    private BaseInterface srcIface;
+    private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
 
-    public MultiCastPacket(O payLoad, NMulticastGroup group, NBaseInterface srcIface) {
+    public MultiCastPacket(O payLoad, MulticastGroup group, BaseInterface srcIface) {
         this.payLoad = payLoad;
         this.group = group;
         this.srcAddress = srcIface.getAddress();
@@ -47,11 +50,11 @@ public abstract class MultiCastPacket<O> {
         this.payLoad = payLoad;
     }
 
-    public NMulticastGroup getGroup() {
+    public MulticastGroup getGroup() {
         return group;
     }
 
-    public void setGroup(NMulticastGroup group) {
+    public void setGroup(MulticastGroup group) {
         this.group = group;
     }
 
@@ -63,14 +66,33 @@ public abstract class MultiCastPacket<O> {
         this.srcAddress = srcAddress;
     }
 
-    public NBaseInterface getSrcIface() {
+    public BaseInterface getSrcIface() {
         return srcIface;
     }
 
-    public void setSrcIface(NBaseInterface srcIface) {
+    public void setSrcIface(BaseInterface srcIface) {
         this.srcIface = srcIface;
     }
 
-    
-    
+    /**
+     * @return the walked
+     */
+    public Map<String, BaseInterface> getWalked() {
+        return walked;
+    }
+
+    /**
+     * @param walked the walked to set
+     */
+    public void setWalked(Map<String, BaseInterface> walked) {
+        this.walked = walked;
+    }
+
+    public void notifyWalk(BaseInterface i) {
+        this.walked.put(i.getUid(), i);
+    }
+
+    public Boolean walked(BaseInterface iFace) {
+        return this.walked.containsKey(iFace.getUid());
+    }
 }

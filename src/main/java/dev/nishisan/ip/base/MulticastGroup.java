@@ -17,7 +17,6 @@
  */
 package dev.nishisan.ip.base;
 
-import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.packet.MultiCastPacket;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
@@ -29,27 +28,27 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author lucas
  */
-public class NMulticastGroup {
+public class MulticastGroup {
 
     private IPAddress mcastGroup; // 239.1.1.1
     private final PublishSubject<MultiCastPacket> eventBus = PublishSubject.create();
-
-    public void sendMulticasPacket(MultiCastPacket packet) {
-        this.eventBus.onNext(packet);
-    }
-
-    public NMulticastGroup(IPAddress mcastGroup) {
-        this.mcastGroup = mcastGroup;
-    }
-
-    public NMulticastGroup(String ipAddress) {
-        this.mcastGroup = NRoutingEntry.getIpAddress(ipAddress);
-    }
-
     /**
      * List of subscribers in the group
      */
-    private Map<String, NBaseInterface> subscribers = new ConcurrentHashMap<>();
+    private Map<String, BaseInterface> subscribers = new ConcurrentHashMap<>();
+
+    public void sendMulticasPacket(MultiCastPacket packet) {
+        System.out.println("Sending Mcast Message to:" + subscribers.size());
+        this.eventBus.onNext(packet);
+    }
+
+    public MulticastGroup(IPAddress mcastGroup) {
+        this.mcastGroup = mcastGroup;
+    }
+
+    public MulticastGroup(String ipAddress) {
+        this.mcastGroup = NRoutingEntry.getIpAddress(ipAddress);
+    }
 
     public IPAddress getMcastGroup() {
         return mcastGroup;
@@ -59,18 +58,22 @@ public class NMulticastGroup {
         this.mcastGroup = mcastGroup;
     }
 
-    public Map<String, NBaseInterface> getSubscribers() {
+    public Map<String, BaseInterface> getSubscribers() {
         return subscribers;
     }
 
-    public void setSubscribers(Map<String, NBaseInterface> subscribers) {
+    public void setSubscribers(Map<String, BaseInterface> subscribers) {
         this.subscribers = subscribers;
     }
 
-    public void addSubscriberInterface(NBaseInterface iFace) {
+    public void addSubscriberInterface(BaseInterface iFace) {
         if (!this.subscribers.containsKey(iFace.getUid())) {
             this.subscribers.put(iFace.getUid(), iFace);
         }
+    }
+
+    public PublishSubject<MultiCastPacket> getEventBus() {
+        return eventBus;
     }
 
 }

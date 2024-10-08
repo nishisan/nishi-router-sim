@@ -17,7 +17,7 @@
  */
 package dev.nishisan.ip.router.protocols.configuration;
 
-import dev.nishisan.ip.base.NBaseInterface;
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RipV2ProtocolConfiguration extends RoutingProtocolConfiguration {
 
     private Boolean enabled = false;
-    private Map<String, NBaseInterface> passiveInterface = new ConcurrentHashMap<>();
+    private Map<String, BaseInterface> passiveInterface = new ConcurrentHashMap<>();
     private Map<String, NRoutingEntry> networks = new ConcurrentHashMap<>();
     public static String type = "RIPV2";
 
@@ -43,11 +43,11 @@ public class RipV2ProtocolConfiguration extends RoutingProtocolConfiguration {
         this.enabled = enabled;
     }
 
-    public Map<String, NBaseInterface> getPassiveInterface() {
+    public Map<String, BaseInterface> getPassiveInterface() {
         return passiveInterface;
     }
 
-    public void setPassiveInterface(Map<String, NBaseInterface> passiveInterface) {
+    public void setPassiveInterface(Map<String, BaseInterface> passiveInterface) {
         this.passiveInterface = passiveInterface;
     }
 
@@ -56,7 +56,7 @@ public class RipV2ProtocolConfiguration extends RoutingProtocolConfiguration {
         return RipV2ProtocolConfiguration.type;
     }
 
-    public void addPassiveInterface(NBaseInterface iFace) {
+    public void addPassiveInterface(BaseInterface iFace) {
         if (!this.passiveInterface.containsKey(iFace.getUid())) {
             this.passiveInterface.put(iFace.getUid(), iFace);
         }
