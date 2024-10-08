@@ -80,7 +80,7 @@ public class SimpleRipV2Example {
         vSwitch1.connect(router1.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-1"));
         vSwitch1.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-2"));
 
-        router1.setTickTime(10);
+        router1.setTickTime(20);
         
         router1.printInterfaces();
         router2.printInterfaces();
@@ -93,8 +93,9 @@ public class SimpleRipV2Example {
         /**
          * Start router-2
          */
-        router2.setTickTime(10);
+        router2.setTickTime(20);
         router2.start();
+        
 //        router1.getInterfaces().forEach((uid, iFace) -> {
 //            /**
 //             * Build Route Annouce RipV2 as Mcast Packet

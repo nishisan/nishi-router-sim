@@ -24,9 +24,9 @@ import dev.nishisan.ip.packet.BroadCastPacket;
  *
  * @author lucas
  */
-public interface IPacketProcessor<T extends BroadCastPacket<T>> {
+public interface IBroadCastPacketProcessor<T extends BroadCastPacket<T>> {
 
-    public void processPacket(BroadCastPacket m, BaseInterface iFace);
+    public void processBroadCastPacket(BroadCastPacket m, BaseInterface iFace);
 
     public String getUuid();
     

@@ -29,51 +29,54 @@ import java.util.concurrent.ConcurrentHashMap;
  * @author lucas
  */
 public class MulticastGroup {
-
+    
     private IPAddress mcastGroup; // 239.1.1.1
     private final PublishSubject<MultiCastPacket> eventBus = PublishSubject.create();
     /**
      * List of subscribers in the group
      */
     private Map<String, BaseInterface> subscribers = new ConcurrentHashMap<>();
-
+    
     public void sendMulticasPacket(MultiCastPacket packet) {
-        System.out.println("Sending Mcast Message to:" + subscribers.size());
+//        System.out.println("Sending Mcast Message to:" + subscribers.size());
+//        subscribers.forEach((k, v) -> {
+//            System.out.println("    "+ v.fullName() + " Already Walked:" + packet.walked(v));
+//        });
         this.eventBus.onNext(packet);
     }
-
+    
     public MulticastGroup(IPAddress mcastGroup) {
         this.mcastGroup = mcastGroup;
     }
-
+    
     public MulticastGroup(String ipAddress) {
         this.mcastGroup = NRoutingEntry.getIpAddress(ipAddress);
     }
-
+    
     public IPAddress getMcastGroup() {
         return mcastGroup;
     }
-
+    
     public void setMcastGroup(IPAddress mcastGroup) {
         this.mcastGroup = mcastGroup;
     }
-
+    
     public Map<String, BaseInterface> getSubscribers() {
         return subscribers;
     }
-
+    
     public void setSubscribers(Map<String, BaseInterface> subscribers) {
         this.subscribers = subscribers;
     }
-
+    
     public void addSubscriberInterface(BaseInterface iFace) {
         if (!this.subscribers.containsKey(iFace.getUid())) {
             this.subscribers.put(iFace.getUid(), iFace);
         }
     }
-
+    
     public PublishSubject<MultiCastPacket> getEventBus() {
         return eventBus;
     }
-
+    
 }

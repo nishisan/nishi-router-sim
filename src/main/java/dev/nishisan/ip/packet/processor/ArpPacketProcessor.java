@@ -25,14 +25,14 @@ import dev.nishisan.ip.packet.BroadCastPacket;
  *
  * @author lucas
  */
-public class ArpPacketProcessor extends AbsPacketProcessor<ArpPacket> {
+public class ArpPacketProcessor extends AbsBroadCastPacketProcessor<ArpPacket> {
 
     public ArpPacketProcessor() {
         this.setName("ARP_PROCESSOR");
     }
 
     @Override
-    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
+    public void processBroadCastPacket(BroadCastPacket m, BaseInterface iFace) {
         if (m instanceof ArpPacket arp) {
 //            System.out.println("Arp Packet");
             if (iFace.getAddress() != null) {

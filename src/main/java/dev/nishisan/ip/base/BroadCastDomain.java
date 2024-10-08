@@ -21,6 +21,7 @@ import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.packet.MultiCastPacket;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -38,6 +39,8 @@ public class BroadCastDomain {
     private String name;
     private final BaseNe ne;
 
+    private String uid = UUID.randomUUID().toString();
+
     public BroadCastDomain(String name, BaseNe ne) {
         this.name = name;
         this.ne = ne;
@@ -53,6 +56,10 @@ public class BroadCastDomain {
 
     public Map<String, MulticastGroup> getmCastGroups() {
         return mCastGroups;
+    }
+
+    public Boolean hasMCastGroup(MulticastGroup g) {
+        return this.mCastGroups.containsKey(g.getMcastGroup().toString());
     }
 
     public String getName() {
@@ -107,8 +114,18 @@ public class BroadCastDomain {
         return this.mCastGroups.get(group);
     }
 
+    public MulticastGroup getMcastGroup(MulticastGroup group) {
+        return this.mCastGroups.get(group.getMcastGroup().toString());
+    }
+
     public Long getAge() {
         return age;
     }
+
+    public String getUid() {
+        return uid;
+    }
+    
+    
 
 }

@@ -20,6 +20,8 @@ package dev.nishisan.ip.router.examples;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
 import dev.nishisan.ip.router.ne.NRouterInterface;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *

@@ -24,7 +24,7 @@ import java.util.UUID;
  *
  * @author lucas
  */
-public abstract class AbsPacketProcessor<T extends BroadCastPacket<T>> implements IPacketProcessor<T> {
+public abstract class AbsBroadCastPacketProcessor<T extends BroadCastPacket<T>> implements IBroadCastPacketProcessor<T> {
 
     private String name;
 

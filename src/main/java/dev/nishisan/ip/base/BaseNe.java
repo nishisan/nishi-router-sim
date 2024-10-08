@@ -20,7 +20,6 @@ package dev.nishisan.ip.base;
 import dev.nishisan.ip.packet.ArpPacket;
 import dev.nishisan.ip.packet.NPacket;
 import dev.nishisan.ip.packet.BroadCastPacket;
-import dev.nishisan.ip.packet.processor.IPacketProcessor;
 import dev.nishisan.ip.router.ne.NRouter;
 import dev.nishisan.ip.router.ne.NRoutingEntry;
 import inet.ipaddr.IPAddress;
@@ -33,6 +32,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import dev.nishisan.ip.packet.processor.IBroadCastPacketProcessor;
 
 /**
  *
@@ -48,7 +48,7 @@ public abstract class BaseNe<T extends BaseInterface> {
     private BroadCastDomain defaultBroadcastDomain = new BroadCastDomain("default", this);
 
     private Map<String, T> interfaces = Collections.synchronizedMap(new LinkedHashMap());
-    private Map<String, IPacketProcessor> processors = Collections.synchronizedMap(new LinkedHashMap());
+    private Map<String, IBroadCastPacketProcessor> processors = Collections.synchronizedMap(new LinkedHashMap());
     private String osVersion = "Nishi Os - v0.01 - Core (1.0)";
     private AtomicBoolean running = new AtomicBoolean(false);
     private Thread tickThread;
@@ -136,25 +136,25 @@ public abstract class BaseNe<T extends BaseInterface> {
 
     public abstract void forwardPacket(NPacket packet);
 
-    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
+    public void processBroadCastPacket(BroadCastPacket m, BaseInterface iFace) {
         /**
          * Chama a implementação dos processadores registrados
          */
         this.getProcessors().forEach((k, p) -> {
 //            System.out.println(" Processing Packet:[" + k + "] Of Type:" + p.getName());
-            p.processPacket(m, iFace);
+            p.processBroadCastPacket(m, iFace);
         });
 
     }
 
     public abstract void registerProcessors();
 
-    public void addProcessor(IPacketProcessor processor) {
+    public void addProcessor(IBroadCastPacketProcessor processor) {
         System.out.println("Packet Processor:[" + processor.getName() + "] Added To:[" + this.name + "]");
         this.processors.put(processor.getName(), processor);
     }
 
-    public Map<String, IPacketProcessor> getProcessors() {
+    public Map<String, IBroadCastPacketProcessor> getProcessors() {
         return processors;
     }
 

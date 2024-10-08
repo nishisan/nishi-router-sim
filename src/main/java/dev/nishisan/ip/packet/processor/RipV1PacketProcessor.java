@@ -26,14 +26,14 @@ import dev.nishisan.ip.router.ne.NRouter;
  *
  * @author lucas
  */
-public class RipV1PacketProcessor extends AbsPacketProcessor<RipV1AnnouncePacket> {
+public class RipV1PacketProcessor extends AbsBroadCastPacketProcessor<RipV1AnnouncePacket> {
 
     public RipV1PacketProcessor() {
         this.setName("RIP_V1_PROCESSOR");
     }
 
     @Override
-    public void processPacket(BroadCastPacket m, BaseInterface iFace) {
+    public void processBroadCastPacket(BroadCastPacket m, BaseInterface iFace) {
         if (m instanceof RipV1AnnouncePacket ripAnnouce) {
             //
             // Responde ele mesmo para testar..

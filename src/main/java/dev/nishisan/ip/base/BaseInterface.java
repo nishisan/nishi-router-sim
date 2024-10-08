@@ -121,7 +121,7 @@ public class BaseInterface {
                         /**
                          * Processa o pacote na interface local.
                          */
-                        this.ne.processPacket(m, this);
+                        this.ne.processBroadCastPacket(m, this);
 
                         //
                         // Obtem a ponta remota
@@ -147,18 +147,29 @@ public class BaseInterface {
      * mcast packet received, check if its not from the same interface..
      */
     private void processMcastPacket(MultiCastPacket mCastPacket) {
-
-        System.out.println("Mcast Packet Received on:" + this.getUid());
-        System.out.println(this.getNe().getName() + " - mcast received from:" + mCastPacket.getSrcIface().getNe().getName() + "." + mCastPacket.getSrcIface().getName());
+//        System.out.println("ON [" + this.fullName() + "]");
         if (this.link != null) {
             /**
              * We have a link..
              */
-            System.out.println("Found Link from:[" + this.link.getSrc().fullName() + "] To:[" + this.link.getDst().fullName() + "]");
             BaseInterface iFace = this.link.getOtherIface(this);
+
+            if (iFace.equals(mCastPacket.getSrcIface())) {
+                iFace = this;
+                if (iFace.equals(mCastPacket.getSrcIface())) {
+                    return;
+                }
+            }
+
             if (!mCastPacket.walked(iFace)) {
+                System.out.println("Found Link from:[" + this.link.getSrc().fullName() + "] To:[" + this.link.getDst().fullName() + "]");
+                System.out.println("Mcast Packet Received on:" + this.getUid());
+                System.out.println("[" + this.fullName() + "] - mcast received from:[" + mCastPacket.getSrcIface().fullName() + "]");
+
                 mCastPacket.notifyWalk(iFace);
 
+//                this.getNe().pro
+                
                 if (!iFace.isNRouterInterface()) {
                     /**
                      * Its is not a router!
@@ -167,16 +178,43 @@ public class BaseInterface {
 
                         System.out.println(this.getNe().getName() + "." + this.getName() + " Packet Found a Switch: " + iFace.getNe().getName() + "." + iFace.getName());
 
-                        iFace.joinMcastGroup(mCastPacket.getGroup()).sendMulticasPacket(mCastPacket);
+                        /**
+                         * Notifies the port
+                         */
+                        MulticastGroup g = iFace.joinMcastGroup(mCastPacket.getGroup());
+                        g.sendMulticasPacket(mCastPacket);
 
                     }
 
                 } else {
                     /**
-                     * Other Router :)
+                     * Other Router :) sends the multicast packet
                      */
-                    iFace.joinMcastGroup(mCastPacket.getGroup()).sendMulticasPacket(mCastPacket);
+                    System.out.println(this.getNe().getName() + "." + this.getName() + " Packet Found a Router: " + iFace.getNe().getName() + "." + iFace.getName());
+
+                    iFace.joinMcastGroup(mCastPacket.getGroup())
+                            .sendMulticasPacket(mCastPacket);
                 }
+            } else {
+
+                if (iFace.getBroadCastDomain().hasMCastGroup(mCastPacket.getGroup())) {
+//                    System.out.println("Conheco aqui");
+                    MulticastGroup a = iFace.getBroadCastDomain().getMcastGroup(mCastPacket.getGroup());
+                    if (!mCastPacket.walked(iFace.getBroadCastDomain())) {
+                        mCastPacket.notifyWalk(iFace.getBroadCastDomain());
+                        if (!a.equals(mCastPacket.getGroup())) {
+                            //
+                            // Propagates to the broadcast domain
+                            //
+                            a.sendMulticasPacket(mCastPacket);
+                        }
+                    }
+                }
+
+                //
+                // Ist safe, because packet already travelled here
+                //
+//                System.out.println("Discarting At:[" + this.fullName() + "]");
             }
         }
 
@@ -346,10 +384,10 @@ public class BaseInterface {
          */
 
         MulticastGroup result = this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
-        Disposable subscription = result.getEventBus().subscribe(this::processMcastPacket);
-
-        this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(subscription, result));
-
+        if (!this.joinedGroups.containsKey(result.getMcastGroup().toString())) {
+            Disposable sub = result.getEventBus().subscribe(this::processMcastPacket);
+            this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(sub, result));
+        }
         return result;
     }
 
