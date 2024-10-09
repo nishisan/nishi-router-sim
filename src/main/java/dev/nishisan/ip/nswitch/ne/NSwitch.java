@@ -19,7 +19,6 @@ package dev.nishisan.ip.nswitch.ne;
 
 import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.base.BaseNe;
-import dev.nishisan.ip.base.BroadCastDomain;
 import dev.nishisan.ip.base.Link;
 import dev.nishisan.ip.packet.NPacket;
 import java.util.Collections;

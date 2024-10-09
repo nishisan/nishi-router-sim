@@ -25,28 +25,28 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
- * @author lucas
+ * é * @author lucas
  */
-public abstract class MultiCastPacket<O> {
+public abstract class MultiCastPacket<T> {
 
-    private O payLoad;
+    private T payLoad;
     private MulticastGroup group;
     private IPAddress srcAddress;
     private BaseInterface srcIface;
     private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
 
-    public MultiCastPacket(O payLoad, MulticastGroup group, BaseInterface srcIface) {
+    public MultiCastPacket(T payLoad, MulticastGroup group, BaseInterface srcIface) {
         this.payLoad = payLoad;
         this.group = group;
         this.srcAddress = srcIface.getAddress();
         this.srcIface = srcIface;
     }
 
-    public O getPayLoad() {
+    public T getPayLoad() {
         return payLoad;
     }
 
-    public void setPayLoad(O payLoad) {
+    public void setPayLoad(T payLoad) {
         this.payLoad = payLoad;
     }
 

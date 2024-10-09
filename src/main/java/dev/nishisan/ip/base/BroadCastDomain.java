@@ -21,6 +21,7 @@ import dev.nishisan.ip.packet.BroadCastPacket;
 import dev.nishisan.ip.packet.MultiCastPacket;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -37,6 +38,7 @@ public class BroadCastDomain {
     private Long age = System.currentTimeMillis();
     private String name;
     private final BaseNe ne;
+    private final String uuid = UUID.randomUUID().toString();
 
     public BroadCastDomain(String name, BaseNe ne) {
         this.name = name;
@@ -109,6 +111,10 @@ public class BroadCastDomain {
 
     public Long getAge() {
         return age;
+    }
+
+    public String getUuid() {
+        return uuid;
     }
 
 }

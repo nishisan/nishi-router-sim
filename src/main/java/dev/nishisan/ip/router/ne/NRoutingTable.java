@@ -44,7 +44,9 @@ public class NRoutingTable {
     }
 
     public NRoutingEntry addRoute(NRoutingEntry entry) {
-        this.entries.put(entry.getUid(), entry);
+        if (!this.entries.values().contains(entry)) {
+            this.entries.put(entry.getUid(), entry);
+        }
         return entry;
     }
 

@@ -38,7 +38,6 @@ public class MulticastGroup {
     private Map<String, BaseInterface> subscribers = new ConcurrentHashMap<>();
 
     public void sendMulticasPacket(MultiCastPacket packet) {
-        System.out.println("Sending Mcast Message to:" + subscribers.size());
         this.eventBus.onNext(packet);
     }
 

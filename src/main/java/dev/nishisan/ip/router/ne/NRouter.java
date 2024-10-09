@@ -379,7 +379,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
          * Sent the packet to the joined group
          */
         group.sendMulticasPacket(mcastPacket);
-        System.out.println("Sent Mcast Packet to:" + group.getMcastGroup().toString() + " From:[" + mcastPacket.getSrcIface().getAddress() + "/" + mcastPacket.getSrcIface().getMacAddress() + "]");
+//        System.out.println("Sent Mcast Packet to:" + group.getMcastGroup().toString() + " From:[" + mcastPacket.getSrcIface().getAddress() + "/" + mcastPacket.getSrcIface().getMacAddress() + "]");
 
     }
 

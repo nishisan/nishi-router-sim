@@ -19,6 +19,7 @@ package dev.nishisan.ip.router.ne;
 
 import inet.ipaddr.IPAddress;
 import inet.ipaddr.IPAddressString;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -272,4 +273,65 @@ public class NRoutingEntry {
         long uptimeMillis = System.currentTimeMillis() - this.getUpSince();
         return this.formatUptime(uptimeMillis);
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 97 * hash + Objects.hashCode(this.dst);
+        hash = 97 * hash + Objects.hashCode(this.nextHop);
+        hash = 97 * hash + Objects.hashCode(this.src);
+        hash = 97 * hash + Objects.hashCode(this.dev);
+        hash = 97 * hash + Objects.hashCode(this.directConneted);
+        hash = 97 * hash + Objects.hashCode(this.metric);
+        hash = 97 * hash + Objects.hashCode(this.adminDistance);
+        hash = 97 * hash + Objects.hashCode(this.distance);
+//        hash = 97 * hash + Objects.hashCode(this.upSince);
+        hash = 97 * hash + Objects.hashCode(this.scope);
+        hash = 97 * hash + Objects.hashCode(this.type);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final NRoutingEntry other = (NRoutingEntry) obj;
+        if (!Objects.equals(this.dst, other.dst)) {
+            return false;
+        }
+        if (!Objects.equals(this.nextHop, other.nextHop)) {
+            return false;
+        }
+        if (!Objects.equals(this.src, other.src)) {
+            return false;
+        }
+        if (!Objects.equals(this.dev, other.dev)) {
+            return false;
+        }
+        if (!Objects.equals(this.directConneted, other.directConneted)) {
+            return false;
+        }
+        if (!Objects.equals(this.metric, other.metric)) {
+            return false;
+        }
+        if (!Objects.equals(this.adminDistance, other.adminDistance)) {
+            return false;
+        }
+        if (!Objects.equals(this.distance, other.distance)) {
+            return false;
+        }
+
+        if (this.scope != other.scope) {
+            return false;
+        }
+        return this.type == other.type;
+    }
+
 }

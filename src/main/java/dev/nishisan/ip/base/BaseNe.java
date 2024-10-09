@@ -121,7 +121,9 @@ public abstract class BaseNe<T extends BaseInterface> {
 
     protected void sendBroadCastMessage(BroadCastPacket m) {
         this.interfaces.forEach((id, intf) -> {
-            intf.getBroadCastDomain().sendBroadcastPacket(m);
+            if (intf.isOperStatusUp()) {
+                intf.getBroadCastDomain().sendBroadcastPacket(m);
+            }
         });
     }
 
@@ -141,7 +143,7 @@ public abstract class BaseNe<T extends BaseInterface> {
          * Chama a implementação dos processadores registrados
          */
         this.getProcessors().forEach((k, p) -> {
-//            System.out.println(" Processing Packet:[" + k + "] Of Type:" + p.getName());
+            System.out.println(" Processing Packet:[" + k + "] Of Type:" + p.getName());
             p.processPacket(m, iFace);
         });
 
@@ -259,6 +261,4 @@ public abstract class BaseNe<T extends BaseInterface> {
         this.tickTime = tickTime;
     }
 
-    
-    
 }

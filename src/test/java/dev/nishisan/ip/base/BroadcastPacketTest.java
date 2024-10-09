@@ -124,7 +124,6 @@ public class BroadcastPacketTest {
                 // Exemplo de validação com RTT
                 Assertions.assertNotNull(req.getRtt(), "RTT não deve ser nulo");
                 Assertions.assertTrue(req.getRtt() > 0, "O RTT deve ser maior que zero");
-
                 System.out.println("RTT: " + req.getRtt());
             } catch (AssertionError e) {
                 // Captura as falhas e exibe no console, pois você está dentro de uma chamada assíncrona

@@ -17,9 +17,12 @@
  */
 package dev.nishisan.ip.router.examples;
 
+import dev.nishisan.ip.base.BaseInterface;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
 import dev.nishisan.ip.router.ne.NRouter;
 import dev.nishisan.ip.router.ne.NRouterInterface;
+import dev.nishisan.ip.router.ne.NRoutingEntry;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +39,8 @@ public class SimpleRipV1Example {
         router1.addInterface("ge0/0/0/3", "192.168.2.1/24");
         router1.addInterface("ge0/0/0/4", "192.168.3.1/24");
 
+        router1.addInterface("lo0","200.0.0.1/32","Local Loop Back").setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
+        
         NRouter router2 = new NRouter("router-2");
         router2.addInterface("ge0/0/0/1", "192.168.0.2/24", "LT:switch-1 eth-2");
         router2.addInterface("ge0/0/0/2", "10.0.2.1/24");
@@ -60,6 +65,13 @@ public class SimpleRipV1Example {
 
         vSwitch1.printInterfaces();
 
+        router1.printRoutingTable();
+        router2.printRoutingTable();
+
+        router3.printRoutingTable();
+
+        System.out.println("Sending RipV1 Packet");
+
         /**
          * Send Announce on all interfaces on default Vlan
          */
@@ -68,14 +80,43 @@ public class SimpleRipV1Example {
         });
 
         try {
-            Thread.sleep(5 * 1000);
+            Thread.sleep(1 * 1000);
         } catch (InterruptedException ex) {
             Logger.getLogger(SimpleRipV1Example.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+        router2.sendRipV1Annouce(s).thenAccept(r -> {
+            System.out.println("Rip Sent");
+        });
+        try {
+            Thread.sleep(1 * 1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimpleRipV1Example.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        router3.sendRipV1Annouce(s).thenAccept(r -> {
+            System.out.println("Rip Sent");
+        });
+        try {
+            Thread.sleep(1 * 1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(SimpleRipV1Example.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        vSwitch1.printInterfaces();
         router1.printRoutingTable();
         router2.printRoutingTable();
 
         router3.printRoutingTable();
+
+        Optional<NRoutingEntry> route = router3.getNextHop("192.168.0.1");
+
+        if (route.isPresent()) {
+            /**
+             * Prints the route used like: ip route get to 192.168.8.1
+             */
+            System.out.println("192.168.0.1 is reacheable via");
+            route.get().print();
+        }
     }
 }

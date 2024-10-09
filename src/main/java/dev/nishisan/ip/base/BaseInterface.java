@@ -76,89 +76,83 @@ public class BaseInterface {
         this.subscription = this.eventBus.subscribe(this::processBroadCast);
     }
 
+    /**
+     * Process a Broadcast packet
+     *
+     * @param m
+     */
     private void processBroadCast(BroadCastPacket m) {
-
-        if (!m.walked(this)) {
-            m.notifyWalk(this);
-
+        /**
+         * Check if oper status is up
+         */
+        if (this.operStatus.equals(NIfaceOperStatus.OPER_UP)) {
             /**
-             * Check if oper status is up
+             * Check if interface has link
              */
-            if (this.operStatus.equals(NIfaceOperStatus.OPER_UP)) {
-                /**
-                 * Check if interface has link
-                 */
-                if (this.link != null) {
-                    if (!m.walked(this)) {
-                        m.notifyWalk(this);
-                        /**
-                         * Apply latency if needed
-                         */
-                        if (this.link.getLatency() > 0) {
-                            try {
-                                //
-                                // Mimics Latency
-                                //
+            if (this.link != null) {
+                if (!m.walked(this)) {
+                    m.notifyWalk(this);
+                    /**
+                     * Apply latency if needed
+                     */
+                    if (this.link.getLatency() > 0) {
+                        try {
+                            //
+                            // Mimics Latency
+                            //
 
-                                Random r = new Random();
-                                Thread.sleep(this.link.getLatency());
+                            Random r = new Random();
+                            Thread.sleep(this.link.getLatency());
 
-                                //
-                                // Jitter
-                                //
-                                if (this.link.getJitter() > 0) {
-                                    Thread.sleep(r.nextInt(this.link.getJitter()));
-                                }
-                            } catch (InterruptedException ex) {
+                            //
+                            // Jitter
+                            //
+                            if (this.link.getJitter() > 0) {
+                                Thread.sleep(r.nextInt(this.link.getJitter()));
                             }
+                        } catch (InterruptedException ex) {
                         }
-
-                        StringBuilder msg = new StringBuilder();
-                        msg.append("[").append(m.getClass().getSimpleName()).append("] - ");
-                        msg.append("Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
-                        msg.append(" Conected:[True]");
-//                    System.out.println(msg);
-                        /**
-                         * Processa o pacote na interface local.
-                         */
-                        this.ne.processPacket(m, this);
-
-                        //
-                        // Obtem a ponta remota
-                        //
-                        BaseInterface o = this.link.getOtherIface(this);
-                        //
-                        // Como tem Link, esse método propaga para o proximo dominio de broadcast
-                        //
-
-                        o.getBroadCastDomain().sendBroadcastPacket(m);
-
                     }
+
+                    StringBuilder msg = new StringBuilder();
+                    msg.append("[").append(m.getClass().getSimpleName()).append("] - ");
+                    msg.append("Msg Received:[" + m.getUid() + "] At:[" + this.ne.getName() + "/" + this.getName() + "]");
+                    msg.append(" Conected:[True]");
+                    System.out.println(msg);
+                    /**
+                     * Processa o pacote na interface local.
+                     */
+                    this.ne.processPacket(m, this);
+
+                    //
+                    // Obtem a ponta remota
+                    //
+                    BaseInterface o = this.link.getOtherIface(this);
+                    //
+                    // Como tem Link, esse método propaga para o proximo
+                    //
+                    o.getNe().sendBroadCastMessage(m);
                 }
             }
-        } else {
-            /**
-             * Already Walked
-             */
         }
     }
 
     /**
-     * mcast packet received, check if its not from the same interface..
+     * Process the multicast packet
      */
     private void processMcastPacket(MultiCastPacket mCastPacket) {
 
-        System.out.println("Mcast Packet Received on:" + this.getUid());
-        System.out.println(this.getNe().getName() + " - mcast received from:" + mCastPacket.getSrcIface().getNe().getName() + "." + mCastPacket.getSrcIface().getName());
         if (this.link != null) {
             /**
              * We have a link..
              */
-            System.out.println("Found Link from:[" + this.link.getSrc().fullName() + "] To:[" + this.link.getDst().fullName() + "]");
+
             BaseInterface iFace = this.link.getOtherIface(this);
             if (!mCastPacket.walked(iFace)) {
+                System.out.println("Mcast Packet Received on:" + this.fullName());
+                System.out.println("Found Link from:[" + this.link.getSrc().fullName() + "] To:[" + this.link.getDst().fullName() + "]");
+                
                 mCastPacket.notifyWalk(iFace);
-
                 if (!iFace.isNRouterInterface()) {
                     /**
                      * Its is not a router!
@@ -177,6 +171,11 @@ public class BaseInterface {
                      */
                     iFace.joinMcastGroup(mCastPacket.getGroup()).sendMulticasPacket(mCastPacket);
                 }
+            }else{
+                System.out.println("Walked on:" + iFace.fullName());
+                /**
+                 * Check if another BroadCast
+                 */
             }
         }
 
@@ -333,24 +332,31 @@ public class BaseInterface {
          * it will look for the mcast group in the current broadcast domain
          */
 
-        MulticastGroup result = this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
-        Disposable subscription = result.getEventBus().subscribe(this::processMcastPacket);
-        this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(subscription, result));
+        if (!this.getBroadCastDomain().getmCastGroups().containsKey(mcastGroupAddress)) {
+            MulticastGroup result = this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
+            Disposable subscription = result.getEventBus().subscribe(this::processMcastPacket);
+            this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(subscription, result));
+            System.out.println(this.fullName() + " Joined Mcast Group[S]:" + mcastGroupAddress + " In " + this.getBroadCastDomain().getUuid() + " NE: " + this.getNe().getName());
+            return result;
+        } else {
+            return this.getBroadCastDomain().getMcastGroupByIp(mcastGroupAddress);
+        }
 
-        return result;
     }
 
-    public MulticastGroup joinMcastGroup(MulticastGroup mcastGroupAddress) {
+    public MulticastGroup joinMcastGroup(MulticastGroup group) {
         /**
          * it will look for the mcast group in the current broadcast domain
          */
-
-        MulticastGroup result = this.getBroadCastDomain().addInterfaceToMcastGroup(mcastGroupAddress, this);
-        Disposable subscription = result.getEventBus().subscribe(this::processMcastPacket);
-
-        this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(subscription, result));
-
-        return result;
+        if (!this.getBroadCastDomain().getmCastGroups().containsKey(group.getMcastGroup().toString())) {
+            MulticastGroup result = this.getBroadCastDomain().addInterfaceToMcastGroup(group, this);
+            Disposable subscription = result.getEventBus().subscribe(this::processMcastPacket);
+            this.joinedGroups.put(result.getMcastGroup().toString(), new MultiCastSubscriptionEntry(subscription, result));
+            System.out.println(this.fullName() + " Joined Mcast Group[G]:" + group.getMcastGroup() + " In " + this.getBroadCastDomain().getUuid() + " NE: " + this.getNe().getName());
+            return result;
+        } else {
+            return this.getBroadCastDomain().getmCastGroups().get(group.getMcastGroup().toString());
+        }
     }
 
     public BroadCastDomain getBroadCastDomain() {

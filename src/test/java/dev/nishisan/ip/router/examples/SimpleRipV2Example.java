@@ -17,8 +17,12 @@
  */
 package dev.nishisan.ip.router.examples;
 
+import dev.nishisan.ip.base.MulticastGroup;
 import dev.nishisan.ip.nswitch.ne.NSwitch;
+import dev.nishisan.ip.packet.RipV2AnnoucePacket;
+import dev.nishisan.ip.packet.payload.RipV2Payload;
 import dev.nishisan.ip.router.ne.NRouter;
+import dev.nishisan.ip.router.ne.NRouterInterface;
 import dev.nishisan.ip.router.protocols.configuration.RipV2ProtocolConfiguration;
 
 /**
@@ -30,7 +34,6 @@ public class SimpleRipV2Example {
     public static void main(String[] args) throws InterruptedException {
         NRouter router1 = new NRouter("router-1");
         router1.addInterface("ge0/0/0/1", "192.168.0.1/24", "UPLINK");
-
 
         RipV2ProtocolConfiguration router1RipV2Configuration = new RipV2ProtocolConfiguration();
         /**
@@ -81,20 +84,39 @@ public class SimpleRipV2Example {
         vSwitch1.connect(router2.getInterfaceByName("ge0/0/0/1"), vSwitch1.getInterfaceByName("eth-2"));
 
         router1.setTickTime(10);
-        
+
         router1.printInterfaces();
         router2.printInterfaces();
         vSwitch1.printInterfaces();
         System.out.println("------------------------------------------------------------------------------------");
+
+        /**
+         * Join router 2 interface on group.
+         */
+        MulticastGroup ripv2Group = router1.getInterfaceByName("ge0/0/0/1").joinMcastGroup("224.0.0.9");
+        router2.getInterfaceByName("ge0/0/0/1").joinMcastGroup("224.0.0.9");
+
+        NRouterInterface iFace = router1.getInterfaceByName("ge0/0/0/1");
+        //
+        // 
+        //
+
+        RipV2Payload payLoad = new RipV2Payload(router1.getRoutes(), iFace.getAddress(), iFace);
+        RipV2AnnoucePacket ripv2Announce = new RipV2AnnoucePacket(payLoad, ripv2Group);
+
+        /**
+         * Sends a McastPacket
+         */
+        router2.sendMcastPacket(ripv2Announce);
         /**
          * Start router-1
          */
-        router1.start();
+//        router1.start();
         /**
          * Start router-2
          */
-        router2.setTickTime(10);
-        router2.start();
+//        router2.setTickTime(10);
+//        router2.start();
 //        router1.getInterfaces().forEach((uid, iFace) -> {
 //            /**
 //             * Build Route Annouce RipV2 as Mcast Packet
@@ -106,10 +128,9 @@ public class SimpleRipV2Example {
 //
 //            router1.sendMcastPacket(ripv2Announce);
 //        });
-
-        Thread.sleep(10 * 1000);
-        router1.shutDown();
-        router2.shutDown();
-        System.out.println("Done");
+//        Thread.sleep(10 * 1000);
+//        router1.shutDown();
+//        router2.shutDown();
+//        System.out.println("Done");
     }
 }
