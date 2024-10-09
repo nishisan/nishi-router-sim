@@ -119,7 +119,7 @@ public abstract class BaseNe<T extends BaseInterface> {
 
     }
 
-    protected void sendBroadCastMessage(BroadCastPacket m) {
+    public void sendBroadCastMessage(BroadCastPacket m) {
         this.interfaces.forEach((id, intf) -> {
             if (intf.isOperStatusUp()) {
                 intf.getBroadCastDomain().sendBroadcastPacket(m);

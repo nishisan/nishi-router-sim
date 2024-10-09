@@ -30,14 +30,25 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MulticastGroup {
 
+    /**
+     * The Mcast Group Address
+     */
     private IPAddress mcastGroup; // 239.1.1.1
+    /**
+     * Directed Connected Subscribers
+     */
     private final PublishSubject<MultiCastPacket> eventBus = PublishSubject.create();
     /**
      * List of subscribers in the group
      */
     private Map<String, BaseInterface> subscribers = new ConcurrentHashMap<>();
 
-    public void sendMulticasPacket(MultiCastPacket packet) {
+    public void sendMcastPacket(MultiCastPacket packet) {
+        System.out.println("1 Sending Mcast To:" + packet.getGroup().getMcastGroup().toString() + " With:" + subscribers.size());
+        subscribers.forEach((k, i) -> {
+            System.out.println("  " + i.fullName());
+        });
+
         packet.notifyWalk(packet.getSrcIface());
         this.eventBus.onNext(packet);
     }

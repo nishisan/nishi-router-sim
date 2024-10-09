@@ -93,7 +93,6 @@ public abstract class MultiCastPacket<T> {
     }
 
     public void notifyWalk(BaseInterface i) {
-//        System.out.println("[" + this.uuid + "] Marked Walked on:>" + i.fullName());
         this.walked.put(i.getUid(), i);
     }
 

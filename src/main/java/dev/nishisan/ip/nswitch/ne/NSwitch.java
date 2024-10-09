@@ -65,6 +65,17 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
                 dst.setOperStatus(BaseInterface.NIfaceOperStatus.OPER_UP);
             }
         }
+
+        /**
+         * We will priotize the switch broadcast..
+         */
+        if (src.isNSwitchInterface() && dst.isNSwitchInterface()) {
+            //
+            // Inter switch communication
+            //
+
+        }
+
         System.out.println("Link Created:" + link.getDst().getOperStatus() + " -> " + link.getSrc().getOperStatus());
         return link;
     }
@@ -84,6 +95,7 @@ public class NSwitch extends BaseNe<NSwitchInterface> {
         System.out.println("-----------------------------------------------------------------------------------------------------");
         System.out.println("Device.........:[" + this.getName() + "]");
         System.out.println("Interfaces.....:[" + this.getInterfaces().size() + "]");
+        System.out.println("BCDomain.....:[" + this.getDefaultBroadcastDomain().getUuid() + "]");
         System.out.println("-----------------------------------------------------------------------------------------------------");
         String header = String.format("%-15s %-15s %-15s %-18s %-30s", "Interface", "Admin Status", "Oper Status", "MAC Address", "Description");
         System.out.println(header);

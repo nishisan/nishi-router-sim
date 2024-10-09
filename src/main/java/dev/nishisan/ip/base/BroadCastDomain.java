@@ -39,6 +39,11 @@ public class BroadCastDomain {
     private String name;
     private final BaseNe ne;
     private final String uuid = UUID.randomUUID().toString();
+    private final Map<String, BaseInterface> connectedIfaces = new ConcurrentHashMap<>();
+
+    public Map<String, BaseInterface> getConnectedIfaces() {
+        return connectedIfaces;
+    }
 
     public BroadCastDomain(String name, BaseNe ne) {
         this.name = name;
@@ -67,6 +72,12 @@ public class BroadCastDomain {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void addIfaceToDomain(BaseInterface iFace) {
+        if (!this.connectedIfaces.containsKey(iFace.getUid())) {
+            this.connectedIfaces.put(iFace.getUid(), iFace);
+        }
     }
 
     public MulticastGroup addInterfaceToMcastGroup(String group, BaseInterface iFace) {
@@ -106,7 +117,7 @@ public class BroadCastDomain {
          */
 
         MulticastGroup group = iFace.joinMcastGroup(packet.getGroup());
-        group.sendMulticasPacket(packet);
+        group.sendMcastPacket(packet);
     }
 
     public MulticastGroup getMcastGroupByIp(String group) {
@@ -125,4 +136,10 @@ public class BroadCastDomain {
         return uuid;
     }
 
+    public void printConnectedIfaces() {
+        this.connectedIfaces.forEach((u, i) -> {
+            System.out.println("  " + i.fullName() + " Connected to :" + this.uuid);
+        });
+
+    }
 }
