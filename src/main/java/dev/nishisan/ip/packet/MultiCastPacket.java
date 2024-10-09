@@ -18,9 +18,11 @@
 package dev.nishisan.ip.packet;
 
 import dev.nishisan.ip.base.BaseInterface;
+import dev.nishisan.ip.base.BroadCastDomain;
 import dev.nishisan.ip.base.MulticastGroup;
 import inet.ipaddr.IPAddress;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,6 +36,8 @@ public abstract class MultiCastPacket<T> {
     private IPAddress srcAddress;
     private BaseInterface srcIface;
     private Map<String, BaseInterface> walked = new ConcurrentHashMap<>();
+    private Map<String, BroadCastDomain> domainsWalked = new ConcurrentHashMap<>();
+    private String uuid = UUID.randomUUID().toString();
 
     public MultiCastPacket(T payLoad, MulticastGroup group, BaseInterface srcIface) {
         this.payLoad = payLoad;
@@ -89,10 +93,20 @@ public abstract class MultiCastPacket<T> {
     }
 
     public void notifyWalk(BaseInterface i) {
+//        System.out.println("[" + this.uuid + "] Marked Walked on:>" + i.fullName());
         this.walked.put(i.getUid(), i);
     }
 
     public Boolean walked(BaseInterface iFace) {
         return this.walked.containsKey(iFace.getUid());
     }
+
+    public void notifyWalk(BroadCastDomain i) {
+        this.domainsWalked.put(i.getUuid(), i);
+    }
+
+    public Boolean walked(BroadCastDomain iFace) {
+        return this.domainsWalked.containsKey(iFace.getUuid());
+    }
+
 }

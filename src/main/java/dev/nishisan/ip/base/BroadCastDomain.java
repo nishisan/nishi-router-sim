@@ -57,6 +57,10 @@ public class BroadCastDomain {
         return mCastGroups;
     }
 
+    public Boolean hasMCastGroup(MulticastGroup g) {
+        return this.mCastGroups.containsKey(g.getMcastGroup().toString());
+    }
+
     public String getName() {
         return name;
     }
@@ -107,6 +111,10 @@ public class BroadCastDomain {
 
     public MulticastGroup getMcastGroupByIp(String group) {
         return this.mCastGroups.get(group);
+    }
+
+    public MulticastGroup getMcastGroup(MulticastGroup group) {
+        return this.mCastGroups.get(group.getMcastGroup().toString());
     }
 
     public Long getAge() {

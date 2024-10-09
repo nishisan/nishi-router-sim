@@ -38,6 +38,7 @@ public class MulticastGroup {
     private Map<String, BaseInterface> subscribers = new ConcurrentHashMap<>();
 
     public void sendMulticasPacket(MultiCastPacket packet) {
+        packet.notifyWalk(packet.getSrcIface());
         this.eventBus.onNext(packet);
     }
 

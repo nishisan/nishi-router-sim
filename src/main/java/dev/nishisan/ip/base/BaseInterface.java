@@ -151,7 +151,7 @@ public class BaseInterface {
             if (!mCastPacket.walked(iFace)) {
                 System.out.println("Mcast Packet Received on:" + this.fullName());
                 System.out.println("Found Link from:[" + this.link.getSrc().fullName() + "] To:[" + this.link.getDst().fullName() + "]");
-                
+
                 mCastPacket.notifyWalk(iFace);
                 if (!iFace.isNRouterInterface()) {
                     /**
@@ -171,11 +171,24 @@ public class BaseInterface {
                      */
                     iFace.joinMcastGroup(mCastPacket.getGroup()).sendMulticasPacket(mCastPacket);
                 }
-            }else{
-                System.out.println("Walked on:" + iFace.fullName());
+            } else {
+
                 /**
                  * Check if another BroadCast
                  */
+                if (iFace.getBroadCastDomain().hasMCastGroup(mCastPacket.getGroup())) {
+//                    System.out.println("Conheco aqui");
+                    MulticastGroup a = iFace.getBroadCastDomain().getMcastGroup(mCastPacket.getGroup());
+                    if (!mCastPacket.walked(iFace.getBroadCastDomain())) {
+                        mCastPacket.notifyWalk(iFace.getBroadCastDomain());
+                        if (!a.equals(mCastPacket.getGroup())) {
+                            //
+                            // Propagates to the broadcast domain
+                            //
+                            a.sendMulticasPacket(mCastPacket);
+                        }
+                    }
+                }
             }
         }
 
@@ -343,6 +356,7 @@ public class BaseInterface {
         }
 
     }
+    
 
     public MulticastGroup joinMcastGroup(MulticastGroup group) {
         /**

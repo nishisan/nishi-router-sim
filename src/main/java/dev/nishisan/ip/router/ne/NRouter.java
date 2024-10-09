@@ -375,6 +375,7 @@ public class NRouter extends BaseNe<NRouterInterface> {
          * 1 Join Interface to the Group
          */
         MulticastGroup group = mcastPacket.getSrcIface().joinMcastGroup(mcastPacket.getGroup());
+        
         /**
          * Sent the packet to the joined group
          */

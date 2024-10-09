@@ -107,7 +107,7 @@ public class SimpleRipV2Example {
         /**
          * Sends a McastPacket
          */
-        router2.sendMcastPacket(ripv2Announce);
+        router1.sendMcastPacket(ripv2Announce);
         /**
          * Start router-1
          */
